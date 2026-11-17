@@ -1,0 +1,25 @@
+{
+  "name": "remunify",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,api -c cyan,magenta \"npm run dev -w @remunify/web\" \"npm run dev -w @remunify/api\"",
+    "dev:web": "npm run dev -w @remunify/web",
+    "dev:api": "npm run dev -w @remunify/api",
+    "build": "npm run build -w @remunify/web && npm run build -w @remunify/api",
+    "lint": "npm run lint -w @remunify/web && npm run lint -w @remunify/api",
+    "lint:web": "npm run lint -w @remunify/web",
+    "lint:api": "npm run lint -w @remunify/api",
+    "lint:fix": "npm run lint:fix -w @remunify/web && npm run lint:fix -w @remunify/api",
+    "typecheck": "npm run typecheck -w @remunify/web && npm run typecheck -w @remunify/api",
+    "test": "npm run test --workspaces --if-present",
+    "test:web": "npm run test -w @remunify/web --if-present",
+    "test:api": "npm run test -w @remunify/api --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
