@@ -15,11 +15,18 @@
     "lint:api": "npm run lint -w @remunify/api",
     "lint:fix": "npm run lint:fix -w @remunify/web && npm run lint:fix -w @remunify/api",
     "typecheck": "npm run typecheck -w @remunify/web && npm run typecheck -w @remunify/api",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "npm run test --workspaces --if-present",
     "test:web": "npm run test -w @remunify/web --if-present",
-    "test:api": "npm run test -w @remunify/api --if-present"
+    "test:api": "npm run test -w @remunify/api --if-present",
+    "prepare": "husky"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.6.2"
   }
 }
