@@ -37,10 +37,21 @@ The focus stays on **salary records** and **compensation insight**.
 
 ## Repo layout
 
-| Path       | Package         | Role                     |
-| ---------- | --------------- | ------------------------ |
-| `apps/web` | `@remunify/web` | React + Vite frontend    |
-| `apps/api` | `@remunify/api` | Express + TypeScript API |
+| Path       | Package         | Role                                |
+| ---------- | --------------- | ----------------------------------- |
+| `apps/web` | `@remunify/web` | React + Vite + Tailwind + shadcn/ui |
+| `apps/api` | `@remunify/api` | Express + TypeScript API            |
+
+## API (provisional)
+
+| Method  | Path                                | Purpose                                                                       |
+| ------- | ----------------------------------- | ----------------------------------------------------------------------------- |
+| `GET`   | `/health`                           | Health check                                                                  |
+| `GET`   | `/api/employees`                    | List employees (`page`, `pageSize`, `search`, filters, `sortBy`, `sortOrder`) |
+| `GET`   | `/api/employees/:id`                | Employee detail (includes current salary if any)                              |
+| `GET`   | `/api/employees/:employeeId/salary` | Current salary                                                                |
+| `POST`  | `/api/employees/:employeeId/salary` | Create current salary (409 if exists)                                         |
+| `PATCH` | `/api/employees/:employeeId/salary` | Update current salary                                                         |
 
 ## Local development
 
@@ -62,6 +73,9 @@ npm run dev
 | `npm run dev:api`      | API only (default `http://localhost:3001`)            |
 | `npm run lint`         | Lint both apps (`no-explicit-any` error)              |
 | `npm run typecheck`    | Typecheck both apps (shared strict TS)                |
+| `npm run test`         | Run Vitest suites in both apps                        |
+| `npm run test:web`     | Frontend tests (RTL + jsdom)                          |
+| `npm run test:api`     | Backend tests (Supertest + mocked Prisma)             |
 | `npm run format`       | Prettier write across the repo                        |
 | `npm run format:check` | Prettier check (CI-friendly)                          |
 
@@ -74,6 +88,27 @@ npm run dev
 | `.env.example`          | Root convenience reference                           |
 
 Never commit real `.env` files.
+
+### Database (provisional)
+
+Postgres + Prisma live under `apps/api`. Schema is a **provisional** draft (current salary only; history/extra fields blocked on clarifications). See `apps/api/prisma/ASSUMPTIONS.md`.
+
+```bash
+cp apps/api/.env.example apps/api/.env
+# start Postgres matching DATABASE_URL, then:
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+```
+
+| Command                  | What it does                                                           |
+| ------------------------ | ---------------------------------------------------------------------- |
+| `npm run db:generate`    | Generate Prisma Client                                                 |
+| `npm run db:migrate`     | Apply migrations (`prisma migrate deploy`)                             |
+| `npm run db:migrate:dev` | Dev migrations (`prisma migrate dev`)                                  |
+| `npm run db:seed`        | Seed **10,000** synthetic employees + current salaries (deterministic) |
+
+Seed implementation: `apps/api/prisma/seed.ts` (provisional fields; re-run clears and reloads).
 
 ### Git hooks
 
