@@ -2,7 +2,8 @@
 
 > Provisional relational model for PostgreSQL + Prisma.  
 > Aligns with [`requirements.md`](./requirements.md) and [`architecture.md`](./architecture.md).  
-> **Do not lock** history tables (**Q1**), final attribute lists (**Q4**), or cross-currency totals (**Q2**) until Incubyte replies.
+> **Do not lock** history tables (**Q1**), final attribute lists (**Q4**), or cross-currency totals (**Q2**) until Incubyte replies.  
+> **Implemented draft:** `apps/api/prisma/schema.prisma` + migration `20261117163000_init_provisional`. Assumptions: `apps/api/prisma/ASSUMPTIONS.md`.
 
 ## Principles
 
@@ -52,8 +53,8 @@ Solid boxes = planned for provisional v1. Dashed = **blocked on Q1** (do not imp
 
 ```mermaid
 erDiagram
-  EMPLOYEE ||--o| SALARY : "has current"
-  EMPLOYEE ||--o{ SALARY_HISTORY : "has past (Q1 blocked)"
+  EMPLOYEE ||--o| SALARY : has_current
+  EMPLOYEE ||--o{ SALARY_HISTORY : history_q1_blocked
 
   EMPLOYEE {
     string id PK
@@ -63,31 +64,33 @@ erDiagram
     string department
     string designation
     string status
-    datetime createdAt
-    datetime updatedAt
+    string createdAt
+    string updatedAt
   }
 
   SALARY {
     string id PK
-    string employeeId FK_UK
-    decimal amount
+    string employeeId FK
+    string amount
     string currency
     string period
-    date effectiveFrom
-    datetime updatedAt
+    string effectiveFrom
+    string updatedAt
   }
 
   SALARY_HISTORY {
     string id PK
     string employeeId FK
-    decimal amount
+    string amount
     string currency
     string period
-    date effectiveFrom
-    date effectiveTo
-    datetime createdAt
+    string effectiveFrom
+    string effectiveTo
+    string createdAt
   }
 ```
+
+Note: `Salary.employeeId` is unique in the provisional schema (one current salary). `SALARY_HISTORY` is design-only until **Q1**.
 
 Same diagram is the project **ER artifact** (also linked from the plan). No separate image file required unless we export one later.
 
