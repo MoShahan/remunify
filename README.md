@@ -88,4 +88,14 @@ Full-repo lint, typecheck, and tests are **not** run in the hook - use the npm s
 
 Short, tool-agnostic skills live under `.agents/skills/` (conventions, salary domain, quality gates, docs/commits). Load only the skill that matches the task - they stay small on purpose.
 
+### CI
+
+GitHub Actions (`.github/workflows/ci.yml`) runs parallel jobs on push/PR:
+
+- Format check
+- FE lint / FE typecheck / FE test
+- BE lint / BE typecheck / BE test
+
+Any failing job fails the workflow. No secrets required for this pipeline yet.
+
 More setup (DB migrate/seed, deploy) will be documented as those pieces land.
