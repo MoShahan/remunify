@@ -84,4 +84,8 @@ On commit, Husky runs **lint-staged** on **staged files only**:
 
 Full-repo lint, typecheck, and tests are **not** run in the hook - use the npm scripts (and CI) for those.
 
+### Agent skills
+
+Short, tool-agnostic skills live under `.agents/skills/` (conventions, salary domain, quality gates, docs/commits). Load only the skill that matches the task - they stay small on purpose.
+
 More setup (DB migrate/seed, deploy) will be documented as those pieces land.
