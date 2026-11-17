@@ -5,7 +5,8 @@
     "target": "ES2023",
     "lib": ["ES2023", "DOM"],
     "module": "ESNext",
-    "types": ["vite/client"],
+    "types": ["vite/client", "@testing-library/jest-dom"],
+
     "allowArbitraryExtensions": true,
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
@@ -13,7 +14,13 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
-    "erasableSyntaxOnly": true
+    "erasableSyntaxOnly": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.test.tsx"]
 }
