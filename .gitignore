@@ -1,0 +1,40 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+apps/*/dist
+*.local
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local-only hiring / agent working docs (not part of the product repo)
+CURSOR_PROJECT_BRIEF.md
+PROJECT_PLAN.md
+docs/hiring-email.md
+docs/assessment.md
+docs/clarifications.md
+
+# Local-only tooling (never push; includes em-dash auto-fix helper for pre-commit)
+.local/
