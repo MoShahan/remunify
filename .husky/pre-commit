@@ -1,0 +1,11 @@
+#!/usr/bin/env sh
+
+# Optional local-only em dash -> hyphen auto-fix (not committed; never blocks).
+ROOT="$(git rev-parse --show-toplevel)"
+EM_DASH_SCRIPT="$ROOT/.local/fix-em-dash-staged.mjs"
+if [ -f "$EM_DASH_SCRIPT" ] && command -v node >/dev/null 2>&1; then
+  node "$EM_DASH_SCRIPT" || true
+fi
+
+# Staged-only Prettier + ESLint. Fails the commit if lint fails.
+npx lint-staged
