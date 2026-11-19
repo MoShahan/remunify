@@ -1,7 +1,7 @@
 # Remunify - Architecture
 
-> Provisional design for a modular monolith. Aligns with [`requirements.md`](./requirements.md).  
-> Auth, import/export, and salary-history flows stay out until clarifications **Q1 / Q3 / Q5** are answered.
+> Locked design for a modular monolith (product decisions 2026-11-19).  
+> Aligns with [`requirements.md`](./requirements.md).
 
 ## Style
 
@@ -9,7 +9,7 @@
 
 ```text
 React (apps/web)
-  -> REST JSON
+  -> REST JSON (+ Authorization: Bearer)
 Express API (apps/api)
   -> services (domain rules)
   -> Prisma
@@ -21,7 +21,7 @@ Express API (apps/api)
 | Path                | Responsibility                                                        |
 | ------------------- | --------------------------------------------------------------------- |
 | `apps/web`          | Remunify UI (Vite + React + TypeScript)                               |
-| `apps/api`          | HTTP API, validation, business logic, Prisma, seed                    |
+| `apps/api`          | HTTP API, validation, auth, business logic, Prisma, seed              |
 | `docs/`             | Requirements, architecture, database, decisions, AI/performance notes |
 | Root `package.json` | npm workspaces; `npm run dev` runs web + api (colored logs)           |
 
@@ -29,59 +29,60 @@ Express API (apps/api)
 
 ```text
 Browser
-  |  TanStack Query (planned)
+  |  Login -> store bearer token
+  |  TanStack Query (planned) + Authorization header
   v
 HTTP REST (JSON)
+  |  Auth middleware (except login/health)
   |  Zod validate at boundary
   v
-Route -> Controller (HTTP map / status codes)
+Route -> Controller
   v
-Service (rules: salary update, analytics semantics)
+Service (salary raise = insert history row; analytics FX rules)
   v
 Prisma Client
   v
 PostgreSQL
 ```
 
-- **Reads (directory, dashboard, analytics):** filter/sort/page/aggregate in SQL; return only fields the view needs.
-- **Writes (salary update):** validate input; persist with decimal money + currency; return updated resource or typed error.
-- **Errors:** consistent JSON for validation (400), not found (404), conflict (409), unexpected (500). No stack traces to clients.
+- **Reads (directory, dashboard, analytics):** filter/sort/page/aggregate in SQL; current salary = latest `effectiveFrom`; return only fields the view needs.
+- **Writes (salary raise):** validate; insert new salary row; prior rows remain; return updated current + history as needed.
+- **Export:** authenticated endpoints stream/download CSV or Excel built from current compensation data.
+- **Errors:** consistent JSON for 400/401/404/409/500. No stack traces to clients.
 
 ## Backend modules
 
-| Module      | Owns                                                                                   |
-| ----------- | -------------------------------------------------------------------------------------- |
-| `employees` | List/search/filter/sort/paginate; get by id                                            |
-| `salaries`  | Current compensation get/create/update (**Q1:** history later if required)             |
-| `analytics` | Aggregations by department/country (and similar); **Q2:** never mix currencies blindly |
-
-Optional later (blocked until clarifications):
-
-| Module          | Blocker |
-| --------------- | ------- |
-| `auth`          | **Q3**  |
-| `import-export` | **Q5**  |
+| Module      | Owns                                                                           |
+| ----------- | ------------------------------------------------------------------------------ |
+| `auth`      | Login; issue bearer token; protect routes; single HR user                      |
+| `employees` | List/search/filter/sort/paginate; get by id (includes current salary for list) |
+| `salaries`  | Current get/update (raise); history list for detail                            |
+| `analytics` | Per-currency aggregates; company-wide USD via fixed `FxRate`                   |
+| `export`    | CSV + Excel export of directory/compensation snapshots                         |
 
 ## Frontend feature areas
 
-| Area        | Screens / jobs                                                   |
-| ----------- | ---------------------------------------------------------------- |
-| `dashboard` | Headcount and currency-safe summaries                            |
-| `employees` | Directory + detail                                               |
-| `salaries`  | Edit current pay on employee detail (**Q1:** history UI blocked) |
-| `analytics` | Breakdown views with explicit currency/cohort                    |
+| Area        | Screens / jobs                                                     |
+| ----------- | ------------------------------------------------------------------ |
+| `auth`      | Login (no registration)                                            |
+| `dashboard` | Headcount; per-currency summaries; labeled USD company total       |
+| `employees` | Directory (current salary column) + detail (history timeline)      |
+| `salaries`  | Edit current annual pay on detail (triggers history insert)        |
+| `analytics` | Breakdown views with currency + cohort; USD rollup labeled demo FX |
+| `export`    | Export actions (CSV / Excel)                                       |
 
-UI stack direction: Tailwind + shadcn/ui (or equivalent); modern minimal chrome. See project plan UI quality bar.
+UI stack: Tailwind + shadcn/ui; modern minimal chrome.
 
 ## Cross-cutting
 
-| Concern       | Approach                                                               |
-| ------------- | ---------------------------------------------------------------------- |
-| Validation    | Zod on API inputs; mirror constraints in DB where useful               |
-| Money         | Decimal/numeric in DB; currency code on every amount; no float storage |
-| Auth          | None in provisional v1 (**Q3**)                                        |
-| Config        | Env vars for DB URL, ports; `.env` gitignored                          |
-| Observability | Structured logs on API; enough to debug locally and in deploy          |
+| Concern       | Approach                                                        |
+| ------------- | --------------------------------------------------------------- |
+| Validation    | Zod on API inputs; DB constraints where useful                  |
+| Money         | Decimal in DB; currency on every amount; annual period in v1    |
+| Auth          | Bearer token; one HR user; no public write APIs                 |
+| FX            | Fixed demo rates table/config; never silent cross-currency sums |
+| Config        | Env for DB URL, ports, JWT/secret, demo HR password if needed   |
+| Observability | Structured logs on API                                          |
 
 ## Diagram - runtime
 
@@ -92,13 +93,14 @@ flowchart LR
     Q[TanStack Query]
   end
   subgraph api["apps/api"]
+    Auth[Auth]
     R[Routes]
     C[Controllers]
     S[Services]
     P[Prisma]
   end
   DB[(PostgreSQL)]
-  UI --> Q --> R --> C --> S --> P --> DB
+  UI --> Q --> Auth --> R --> C --> S --> P --> DB
 ```
 
 ## Diagram - module boundaries
@@ -106,21 +108,27 @@ flowchart LR
 ```mermaid
 flowchart TB
   subgraph apiModules["API modules"]
+    AuthM[auth]
     E[employees]
     Sal[salaries]
     A[analytics]
+    X[export]
   end
   subgraph webFeatures["Web features"]
+    Login[login]
     D[dashboard]
     Emp[employees]
     SalUI[salaries]
     An[analytics]
+    Exp[export]
   end
+  Login --> AuthM
   Emp --> E
+  Emp --> Sal
   SalUI --> Sal
   D --> A
   An --> A
-  Emp --> Sal
+  Exp --> X
 ```
 
 ## Non-goals for this architecture
@@ -128,13 +136,14 @@ flowchart TB
 - Microservices, message buses, Kubernetes
 - Shared “god” utils package without a clear need
 - Client-side aggregation over the full 10k employee set
+- Live FX provider calls in v1
 
-## Open clarification impact
+## Product decisions (applied)
 
-| ID     | Architecture impact when answered                          |
-| ------ | ---------------------------------------------------------- |
-| **Q1** | May add history service methods + transactional write path |
-| **Q2** | Analytics service rules for totals / conversion            |
-| **Q3** | Auth middleware and protected routes                       |
-| **Q4** | DTO/schema field lists                                     |
-| **Q5** | New import/export module and endpoints                     |
+| ID     | Outcome                                            |
+| ------ | -------------------------------------------------- |
+| **Q1** | History service + insert-on-raise; detail timeline |
+| **Q2** | Per-currency analytics + USD demo FX rollup        |
+| **Q3** | Auth module + protected routes + login UI          |
+| **Q4** | email, joinedAt; annual only; no components        |
+| **Q5** | Export module (CSV + Excel); import later          |

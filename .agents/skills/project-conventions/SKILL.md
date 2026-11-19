@@ -25,6 +25,7 @@ description: >-
 ## Rules
 
 - TypeScript strict; **no `any`**
-- Do not invent Incubyte clarification answers (Q1-Q5) - see `docs/clarifications.md` / requirements
+- Product decisions are **locked** in `docs/requirements.md` - build to those
 - Keep UI modern/minimal (Tailwind + shadcn direction)
-- Link deep design to `docs/architecture.md` and `docs/database-design.md` - do not paste them into skills
+- Link deep design to `docs/architecture.md`, `docs/database-design.md`, `docs/technical-decisions.md`
+- Small increments: inspect → plan → implement → test → verify → summarize; commit only when asked

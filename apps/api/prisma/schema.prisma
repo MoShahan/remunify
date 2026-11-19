@@ -1,6 +1,6 @@
-// Provisional Remunify schema (v1 draft).
-// Assumptions documented in docs/database-design.md and the README DB section.
-// BLOCKED until clarifications: Q1 salary history tables, Q4 extra attributes/components.
+// Remunify schema - currently still the early provisional draft.
+// Locked target model (history, email, joinedAt, User, FxRate): docs/database-design.md
+// Next step: migrate this file to match the locked design.
 
 generator client {
   provider = "prisma-client-js"
@@ -38,7 +38,7 @@ model Employee {
   @@index([status])
 }
 
-/// Current compensation only (Q1: no SalaryHistory until clarified).
+/// Target model allows multiple rows per employee (history); this draft is still 1:1 current-only.
 model Salary {
   id            String    @id @default(cuid())
   employeeId    String    @unique

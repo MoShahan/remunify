@@ -32,11 +32,9 @@ apps/*/dist
 *.sw?
 
 # Local-only hiring / agent working docs (not part of the product repo)
-CURSOR_PROJECT_BRIEF.md
 PROJECT_PLAN.md
 docs/hiring-email.md
 docs/assessment.md
-docs/clarifications.md
 
 # Local-only tooling (never push; includes em-dash auto-fix helper for pre-commit)
 .local/

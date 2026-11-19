@@ -89,9 +89,9 @@ npm run dev
 
 Never commit real `.env` files.
 
-### Database (provisional)
+### Database
 
-Postgres + Prisma live under `apps/api`. Schema is a **provisional** draft (current salary only; history/extra fields blocked on clarifications). See `apps/api/prisma/ASSUMPTIONS.md`.
+Postgres + Prisma live under `apps/api`. Product model is locked (salary history, multi-currency + demo FX, HR login, CSV/Excel export) - see `docs/requirements.md` and `apps/api/prisma/ASSUMPTIONS.md`. The checked-in schema may still be catching up to that target via the next migration.
 
 ```bash
 cp apps/api/.env.example apps/api/.env
@@ -134,3 +134,14 @@ GitHub Actions (`.github/workflows/ci.yml`) runs parallel jobs on push/PR:
 Any failing job fails the workflow. No secrets required for this pipeline yet.
 
 More setup (DB migrate/seed, deploy) will be documented as those pieces land.
+
+### Upcoming features
+
+Planned after v1 (not built yet):
+
+- Live FX API (replace fixed demo USD rates)
+- CSV/Excel **import**
+- Employee self-service accounts (view own salary history)
+- Monthly salary display (v1 is annual only)
+- Salary component breakdown (base / allowance / bonus)
+- Manager, location, and richer org fields

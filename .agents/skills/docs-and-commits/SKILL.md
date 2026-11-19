@@ -15,7 +15,7 @@ Keep in `docs/`: `requirements.md`, `architecture.md`, `database-design.md`, `er
 
 ## Local-only (gitignored)
 
-Do not commit: `PROJECT_PLAN.md`, `CURSOR_PROJECT_BRIEF.md`, `docs/hiring-email.md`, `docs/assessment.md`, `docs/clarifications.md`, `.local/`
+Do not commit: `PROJECT_PLAN.md`, `docs/hiring-email.md`, `docs/assessment.md`, `.local/`
 
 ## Commits
 

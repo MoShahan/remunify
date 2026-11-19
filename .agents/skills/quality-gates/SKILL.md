@@ -21,8 +21,21 @@ description: >-
 - Commit fails if staged lint fails
 - Full-repo lint/typecheck/tests stay in scripts + CI - not in the hook
 
+## Test priorities
+
+- Salary validation, raise/history rules, currency handling
+- Employee search/filter/sort/pagination
+- Analytics grouping (per-currency + labeled USD rollup)
+- Auth/export once those modules exist
+- Fast, deterministic, no external services; no brittle markup asserts
+
+## Definition of done (submission)
+
+Requirements documented; end-to-end app; migrate + 10k seed; core HR flows; accurate currency analytics; tests/lint/typecheck/build green; README setup; deploy + video; incremental git history; no secrets/real PII.
+
 ## Do not
 
 - Bypass hooks for convenience
 - Add `any` to silence TypeScript
 - Skip validation on money/currency inputs
+- Claim tests/builds succeeded unless actually run

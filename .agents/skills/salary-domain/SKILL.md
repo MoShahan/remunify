@@ -11,23 +11,27 @@ description: >-
 
 - Persist amounts as decimal/numeric - **never** float/double
 - Always store **currency code** with every amount
-- Define pay **period** explicitly (provisional: annual)
+- Pay period in v1: **annual** only
 - Synthetic data only - no real PII
 
-## Currencies (provisional / Q2)
+## Currencies (locked / Q2)
 
-- Do **not** sum across currencies into one total
-- Group analytics by currency; label every metric with currency + population
-- No invented FX rates until clarifications say otherwise
+- Always offer **per-currency** breakdowns; label currency + population
+- Company-wide totals only via **fixed demo FX → USD**; label rates as demo
+- Never blind-sum mixed currencies
+- Live FX API is upcoming - do not call external rate APIs in v1
 
-## Salary history (provisional / Q1)
+## Salary history (locked / Q1)
 
-- Default: **current salary only**
-- Do not build history tables/UI until Q1 is answered
-- If history is required later: effective dates, clear "current" rule, transactional writes
+- Multiple salary rows per employee; **current** = latest `effectiveFrom`
+- Directory / dashboard / analytics use **current only**
+- Detail page shows full history
+- On raise: **insert** new row; keep old; no overlaps; no overwrite/delete
 
-## Attributes (provisional / Q4)
+## Attributes (locked / Q4)
 
-Minimal set until clarified: employee number, name, country, department, designation, status; salary amount, currency, period.
+Employee: number, name, email, joinedAt, country, department, designation, status.  
+Salary: amount, currency, annual period, effectiveFrom.  
+No component breakdown in v1.
 
 Details: `docs/requirements.md`, `docs/database-design.md`
