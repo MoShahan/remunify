@@ -8,6 +8,8 @@ type HeadcountRow = {
   total: bigint
   active: bigint
   inactive: bigint
+  with_salary: bigint
+  without_salary: bigint
 }
 
 type CurrencyAggRow = {
@@ -23,6 +25,7 @@ type DimensionAggRow = {
   currency: string
   employee_count: bigint
   total_amount: Prisma.Decimal | string
+  average_amount: Prisma.Decimal | string
 }
 
 type UsdTotalRow = {
@@ -79,13 +82,23 @@ export async function getAnalyticsSummary() {
     byDepartmentRows,
     usdRows,
   ] = await prisma.$transaction([
-    // Employee status counts (independent of salary rows)
+    // Employee status + salary coverage counts
     prisma.$queryRaw<HeadcountRow[]>`
         SELECT
           COUNT(*)::bigint AS total,
           COUNT(*) FILTER (WHERE status = 'ACTIVE')::bigint AS active,
-          COUNT(*) FILTER (WHERE status = 'INACTIVE')::bigint AS inactive
-        FROM "Employee"
+          COUNT(*) FILTER (WHERE status = 'INACTIVE')::bigint AS inactive,
+          COUNT(*) FILTER (
+            WHERE EXISTS (
+              SELECT 1 FROM "Salary" s WHERE s."employeeId" = e.id
+            )
+          )::bigint AS with_salary,
+          COUNT(*) FILTER (
+            WHERE NOT EXISTS (
+              SELECT 1 FROM "Salary" s WHERE s."employeeId" = e.id
+            )
+          )::bigint AS without_salary
+        FROM "Employee" e
       `,
     // Totals / avg / median per currency - never cross-sum mixed currencies
     prisma.$queryRaw<CurrencyAggRow[]>`
@@ -107,7 +120,8 @@ export async function getAnalyticsSummary() {
           country AS dimension,
           currency,
           COUNT(*)::bigint AS employee_count,
-          SUM(amount) AS total_amount
+          SUM(amount) AS total_amount,
+          AVG(amount) AS average_amount
         FROM current_salary
         GROUP BY country, currency
         ORDER BY country, currency
@@ -119,7 +133,8 @@ export async function getAnalyticsSummary() {
           department AS dimension,
           currency,
           COUNT(*)::bigint AS employee_count,
-          SUM(amount) AS total_amount
+          SUM(amount) AS total_amount,
+          AVG(amount) AS average_amount
         FROM current_salary
         GROUP BY department, currency
         ORDER BY department, currency
@@ -140,6 +155,8 @@ export async function getAnalyticsSummary() {
     total: 0n,
     active: 0n,
     inactive: 0n,
+    with_salary: 0n,
+    without_salary: 0n,
   }
   const usd = usdRows[0]
 
@@ -148,6 +165,8 @@ export async function getAnalyticsSummary() {
       total: Number(headcount.total),
       active: Number(headcount.active),
       inactive: Number(headcount.inactive),
+      withSalary: Number(headcount.with_salary),
+      withoutSalary: Number(headcount.without_salary),
     },
     byCurrency: byCurrencyRows.map((row) => ({
       currency: row.currency,
@@ -161,12 +180,14 @@ export async function getAnalyticsSummary() {
       currency: row.currency,
       employeeCount: Number(row.employee_count),
       totalAmount: decimalToString(row.total_amount),
+      averageAmount: decimalToString(row.average_amount),
     })),
     byDepartment: byDepartmentRows.map((row) => ({
       department: row.dimension,
       currency: row.currency,
       employeeCount: Number(row.employee_count),
       totalAmount: decimalToString(row.total_amount),
+      averageAmount: decimalToString(row.average_amount),
     })),
     companyWideUsd: {
       totalAmountUsd: decimalToString(usd?.total_amount_usd),
