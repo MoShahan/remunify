@@ -89,4 +89,10 @@
   #root {
     @apply min-h-svh;
   }
+
+  /* Hide Edge/IE native password reveal + clear; we use our own toggle. */
+  input[type='password']::-ms-reveal,
+  input[type='password']::-ms-clear {
+    display: none;
+  }
 }

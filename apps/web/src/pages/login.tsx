@@ -6,6 +6,7 @@ import { FormFieldError } from '@/components/form-field-error'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
 import { useAuth } from '@/features/auth/auth-context'
 import { fieldErrorsFromDetails, isApiError } from '@/lib/api'
 
@@ -106,9 +107,8 @@ export default function LoginPage() {
             </div>
             <div>
               <Label htmlFor="password">Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
