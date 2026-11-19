@@ -21,6 +21,39 @@ vi.mock('@/lib/api', async () => {
 })
 
 describe('SalaryFormDialog', () => {
+  it('blocks raise when amount is not greater than current', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <SalaryFormDialog
+        open
+        onOpenChange={() => undefined}
+        employeeId="emp_1"
+        mode="raise"
+        currentSalary={{
+          id: 'sal_1',
+          amount: '100.00',
+          currency: 'USD',
+          period: 'ANNUAL',
+          effectiveFrom: '2024-01-01',
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+        }}
+        onSuccess={() => undefined}
+      />,
+    )
+
+    await user.clear(screen.getByLabelText('Amount'))
+    await user.type(screen.getByLabelText('Amount'), '100')
+    await user.type(screen.getByLabelText('Effective from'), '2025-01-01')
+    await user.click(screen.getByRole('button', { name: 'Save raise' }))
+
+    expect(
+      await screen.findByText(/greater than the current salary/i),
+    ).toBeInTheDocument()
+    expect(raiseSalary).not.toHaveBeenCalled()
+  })
+
   it('maps API field details to helper text', async () => {
     const user = userEvent.setup()
     raiseSalary.mockRejectedValue(

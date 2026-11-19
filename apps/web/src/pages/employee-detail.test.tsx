@@ -1,0 +1,79 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import EmployeeDetailPage from '@/pages/employee-detail'
+
+const getEmployee = vi.fn()
+const updateEmployeeStatus = vi.fn()
+
+vi.mock('sonner', () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
+}))
+
+vi.mock('@/lib/api/employees', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/api/employees')>(
+    '@/lib/api/employees',
+  )
+  return {
+    ...actual,
+    getEmployee: (...args: unknown[]) => getEmployee(...args),
+    updateEmployeeStatus: (...args: unknown[]) => updateEmployeeStatus(...args),
+  }
+})
+
+const employee = {
+  id: 'emp_1',
+  employeeNumber: 'E00001',
+  fullName: 'Aisha Shah',
+  email: 'aisha@example.com',
+  joinedAt: '2022-01-01',
+  country: 'India',
+  department: 'Engineering',
+  designation: 'Manager',
+  status: 'ACTIVE' as const,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+  salary: null,
+  salaryHistory: [],
+}
+
+function renderPage() {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={['/employees/emp_1']}>
+        <Routes>
+          <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+describe('EmployeeDetailPage', () => {
+  beforeEach(() => {
+    getEmployee.mockReset()
+    updateEmployeeStatus.mockReset()
+    getEmployee.mockResolvedValue({ data: employee })
+  })
+
+  it('patches status when the control changes', async () => {
+    const user = userEvent.setup()
+    updateEmployeeStatus.mockResolvedValue({
+      data: { ...employee, status: 'INACTIVE' },
+    })
+
+    renderPage()
+    expect(await screen.findByText('Aisha Shah')).toBeInTheDocument()
+
+    await user.click(screen.getByLabelText('Employment status'))
+    const inactive = await screen.findByRole('option', { name: 'Inactive' })
+    await user.click(inactive)
+
+    expect(updateEmployeeStatus).toHaveBeenCalledWith('emp_1', 'INACTIVE')
+  })
+})
