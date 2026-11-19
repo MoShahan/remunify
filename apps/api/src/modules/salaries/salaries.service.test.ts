@@ -103,6 +103,7 @@ describe('salaries.service', () => {
     ).rejects.toMatchObject({
       statusCode: 409,
       code: 'CONFLICT',
+      message: expect.stringContaining('Use PATCH to record a raise'),
     })
   })
 
