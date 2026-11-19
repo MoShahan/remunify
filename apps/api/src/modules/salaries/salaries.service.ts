@@ -109,11 +109,22 @@ export async function updateSalaryForEmployee(
   }
 
   const currentEffectiveFrom = current.effectiveFrom.toISOString().slice(0, 10)
+  const currentAmount =
+    typeof current.amount === 'string'
+      ? current.amount
+      : current.amount.toFixed(2)
 
   if (body.effectiveFrom <= current.effectiveFrom) {
     throw badRequest(
       `effectiveFrom must be after the current salary effective date (${currentEffectiveFrom}).`,
       { currentEffectiveFrom },
+    )
+  }
+
+  if (Number(body.amount) <= Number(currentAmount)) {
+    throw badRequest(
+      `Raise amount must be greater than the current salary (${currentAmount} ${current.currency}).`,
+      { currentAmount, currency: current.currency },
     )
   }
 
