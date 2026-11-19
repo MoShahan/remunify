@@ -23,6 +23,7 @@ Today that work often lives in spreadsheets. Remunify replaces that with a focus
 - **Employee directory** - search and filter a large employee base (on the order of 10,000 records) with server-side pagination, sorting, and an employee detail view
 - **Salary management** - view and update compensation for an employee with validated inputs and explicit currency and pay-period meaning
 - **Compensation analytics** - insights by dimensions such as department and country, computed on the server so the browser never has to load the full dataset
+- **Export** - CSV and Excel download of the current-salary employee snapshot
 
 ## What this is not
 
@@ -42,16 +43,17 @@ The focus stays on **salary records** and **compensation insight**.
 | `apps/web` | `@remunify/web` | React + Vite + Tailwind + shadcn/ui |
 | `apps/api` | `@remunify/api` | Express + TypeScript API            |
 
-## API (provisional)
+## Docs
 
-| Method  | Path                                | Purpose                                                                       |
-| ------- | ----------------------------------- | ----------------------------------------------------------------------------- |
-| `GET`   | `/health`                           | Health check                                                                  |
-| `GET`   | `/api/employees`                    | List employees (`page`, `pageSize`, `search`, filters, `sortBy`, `sortOrder`) |
-| `GET`   | `/api/employees/:id`                | Employee detail (includes current salary if any)                              |
-| `GET`   | `/api/employees/:employeeId/salary` | Current salary                                                                |
-| `POST`  | `/api/employees/:employeeId/salary` | Create current salary (409 if exists)                                         |
-| `PATCH` | `/api/employees/:employeeId/salary` | Update current salary                                                         |
+| Doc                                                                        | Contents                                  |
+| -------------------------------------------------------------------------- | ----------------------------------------- |
+| [`docs/requirements.md`](docs/requirements.md)                             | Locked v1 product scope                   |
+| [`docs/architecture.md`](docs/architecture.md)                             | Modular monolith, modules, request flow   |
+| [`docs/database-design.md`](docs/database-design.md)                       | Schema, indexes, FX semantics             |
+| [`docs/er-diagram.md`](docs/er-diagram.md)                                 | Entity relationships                      |
+| [`docs/technical-decisions.md`](docs/technical-decisions.md)               | Stack and trade-offs                      |
+| [`docs/performance-considerations.md`](docs/performance-considerations.md) | SQL-side work, export streaming, FE cache |
+| [`docs/ai-workflow.md`](docs/ai-workflow.md)                               | Tools, skills, accepted/rejected choices  |
 
 ## Local development
 
@@ -59,6 +61,10 @@ The focus stays on **salary records** and **compensation insight**.
 npm install
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
+# Start Postgres matching apps/api DATABASE_URL (local install or Docker), then:
+npm run db:generate
+npm run db:migrate
+npm run db:seed
 npm run dev
 ```
 
@@ -77,28 +83,30 @@ npm run dev
 
 Auth token is stored in `localStorage` (`remunify_token`). Protected routes redirect to login. API error messages surface as toasts or field helper text; lists use skeleton loaders.
 
-| Command                | What it does                                          |
-| ---------------------- | ----------------------------------------------------- |
-| `npm run dev`          | Frontend + backend                                    |
-| `npm run dev:web`      | Frontend only (Vite, default `http://localhost:5173`) |
-| `npm run dev:api`      | API only (default `http://localhost:3001`)            |
-| `npm run lint`         | Lint both apps (`no-explicit-any` error)              |
-| `npm run typecheck`    | Typecheck both apps (shared strict TS)                |
-| `npm run test`         | Run Vitest suites in both apps                        |
-| `npm run test:web`     | Frontend tests (RTL + jsdom)                          |
-| `npm run test:api`     | Backend tests (Supertest + mocked Prisma)             |
-| `npm run format`       | Prettier write across the repo                        |
-| `npm run format:check` | Prettier check (CI-friendly)                          |
+| Command                            | What it does                                          |
+| ---------------------------------- | ----------------------------------------------------- |
+| `npm run dev`                      | Frontend + backend                                    |
+| `npm run dev:web`                  | Frontend only (Vite, default `http://localhost:5173`) |
+| `npm run dev:api`                  | API only (default `http://localhost:3001`)            |
+| `npm run build`                    | Production build (web + api)                          |
+| `npm run preview -w @remunify/web` | Preview the web production build                      |
+| `npm run lint`                     | Lint both apps (`no-explicit-any` error)              |
+| `npm run typecheck`                | Typecheck both apps (shared strict TS)                |
+| `npm run test`                     | Run Vitest suites in both apps                        |
+| `npm run test:web`                 | Frontend tests (RTL + jsdom)                          |
+| `npm run test:api`                 | Backend tests (Supertest + mocked Prisma)             |
+| `npm run format`                   | Prettier write across the repo                        |
+| `npm run format:check`             | Prettier check (CI-friendly)                          |
 
 ### Environment
 
-| File                    | Purpose                                              |
-| ----------------------- | ---------------------------------------------------- |
-| `apps/api/.env.example` | API `PORT`, `DATABASE_URL` (copy to `apps/api/.env`) |
-| `apps/web/.env.example` | `VITE_API_URL` (copy to `apps/web/.env`)             |
-| `.env.example`          | Root convenience reference                           |
+| File                    | Purpose                                                                   |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `apps/api/.env.example` | `PORT`, `DATABASE_URL`, `JWT_SECRET`, `JWT_EXPIRES_IN`, HR seed overrides |
+| `apps/web/.env.example` | `VITE_API_URL` (copy to `apps/web/.env`)                                  |
+| `.env.example`          | Root convenience reference                                                |
 
-Never commit real `.env` files.
+Never commit real `.env` files. Set `JWT_SECRET` in `apps/api/.env` (required in production; local default may exist for bootstrap).
 
 ### Database
 
@@ -121,12 +129,11 @@ npm run db:seed
 
 Seed: `apps/api/prisma/seed.ts` (deterministic; re-run clears and reloads). Default HR login: `hr@remunify.com` / `HR@123` (override via `HR_EMAIL` / `HR_PASSWORD`).
 
-Also set `JWT_SECRET` (and optional `JWT_EXPIRES_IN`, default `8h`) in `apps/api/.env`.
-
 ### API (auth required except health + login)
 
 | Method         | Path                                        | Notes                                                    |
 | -------------- | ------------------------------------------- | -------------------------------------------------------- |
+| `GET`          | `/health`                                   | Health check (public)                                    |
 | `POST`         | `/api/auth/login`                           | Body `{ email, password }` → `{ data: { token, user } }` |
 | `GET`          | `/api/employees`                            | Paged directory (Bearer token)                           |
 | `GET`          | `/api/employees/:id`                        | Detail + `salaryHistory`                                 |
@@ -146,11 +153,11 @@ On commit, Husky runs **lint-staged** on **staged files only**:
 - Prettier on staged supported files
 - ESLint on staged `apps/web` / `apps/api` TypeScript (fails the commit if lint fails)
 
-Full-repo lint, typecheck, and tests are **not** run in the hook - use the npm scripts (and CI) for those.
+Full-repo lint, typecheck, tests, and build are **not** run in the hook - use the npm scripts (and CI) for those.
 
 ### Agent skills
 
-Short, tool-agnostic skills live under `.agents/skills/` (conventions, salary domain, quality gates, docs/commits). Load only the skill that matches the task - they stay small on purpose.
+Short, tool-agnostic skills live under `.agents/skills/` (conventions, salary domain, quality gates, docs/commits). Load only the skill that matches the task - they stay small on purpose. See [`docs/ai-workflow.md`](docs/ai-workflow.md).
 
 ### CI
 
@@ -159,10 +166,20 @@ GitHub Actions (`.github/workflows/ci.yml`) runs parallel jobs on push/PR:
 - Format check
 - FE lint / FE typecheck / FE test
 - BE lint / BE typecheck / BE test
+- Production **build** (web + api)
 
 Any failing job fails the workflow. No secrets required for this pipeline yet.
 
-More setup (DB migrate/seed, deploy) will be documented as those pieces land.
+### Deploy and demo
+
+Hosted deploy URL and short demo video are Phase 7 deliverables.
+
+| Item         | Status              |
+| ------------ | ------------------- |
+| Live app URL | _Coming in Phase 7_ |
+| Demo video   | _Coming in Phase 7_ |
+
+Until then, use `npm run build` and `npm run preview -w @remunify/web` for a production UI preview (API still via `npm run dev:api` or a built api process).
 
 ### Upcoming features
 
