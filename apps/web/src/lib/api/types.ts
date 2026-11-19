@@ -103,6 +103,7 @@ export type DimensionAgg = {
   currency: string
   employeeCount: number
   totalAmount: string
+  averageAmount: string
 }
 
 export type AnalyticsSummary = {
@@ -110,6 +111,8 @@ export type AnalyticsSummary = {
     total: number
     active: number
     inactive: number
+    withSalary: number
+    withoutSalary: number
   }
   byCurrency: CurrencyAgg[]
   byCountry: Array<{
@@ -117,12 +120,14 @@ export type AnalyticsSummary = {
     currency: string
     employeeCount: number
     totalAmount: string
+    averageAmount: string
   }>
   byDepartment: Array<{
     department: string
     currency: string
     employeeCount: number
     totalAmount: string
+    averageAmount: string
   }>
   companyWideUsd: {
     totalAmountUsd: string
@@ -130,6 +135,11 @@ export type AnalyticsSummary = {
     ratesAsOf: string | null
     label: string
   }
+}
+
+export type EmployeeFacets = {
+  countries: string[]
+  departments: string[]
 }
 
 export type AnalyticsSummaryResponse = {
