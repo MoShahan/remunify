@@ -33,7 +33,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { PREVIEW_ROW_LIMIT } from '@/features/analytics/rollup-table-model'
+import {
+  PREVIEW_ROW_LIMIT,
+  previewRangeLabel,
+} from '@/features/analytics/rollup-table-model'
 import { AnalyticsRollupTable } from '@/features/analytics/rollup-tables'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
 import { formatMoneyAmount } from '@/lib/format-money'
@@ -363,8 +366,8 @@ export default function AnalyticsPage() {
               <CardHeader>
                 <CardTitle>By country</CardTitle>
                 <CardDescription>
-                  Totals stay with their currency - never summed across FX.
-                  Showing top {PREVIEW_ROW_LIMIT} rows.
+                  Totals stay with their currency - never summed across FX.{' '}
+                  {previewRangeLabel(query.data.byCountry.length)}.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -384,8 +387,8 @@ export default function AnalyticsPage() {
               <CardHeader>
                 <CardTitle>By department</CardTitle>
                 <CardDescription>
-                  Department rollups grouped with currency. Showing top{' '}
-                  {PREVIEW_ROW_LIMIT} rows.
+                  Department rollups grouped with currency.{' '}
+                  {previewRangeLabel(query.data.byDepartment.length)}.
                 </CardDescription>
               </CardHeader>
               <CardContent>

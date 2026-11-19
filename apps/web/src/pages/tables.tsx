@@ -85,6 +85,9 @@ export default function TablesPage() {
   const sorted = sortRollupRows(view, allRows, sortBy, sortOrder)
   const totalPages = Math.max(1, Math.ceil(sorted.length / TABLES_PAGE_SIZE))
   const safePage = Math.min(page, totalPages)
+  const rangeStart =
+    sorted.length === 0 ? 0 : (safePage - 1) * TABLES_PAGE_SIZE + 1
+  const rangeEnd = Math.min(safePage * TABLES_PAGE_SIZE, sorted.length)
   const pageRows = sorted.slice(
     (safePage - 1) * TABLES_PAGE_SIZE,
     safePage * TABLES_PAGE_SIZE,
@@ -185,7 +188,9 @@ export default function TablesPage() {
                 />
                 <div className="flex flex-col gap-3 border-t border-border/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-muted-foreground">
-                    {sorted.length.toLocaleString()} rows · Page {safePage} of{' '}
+                    Showing {rangeStart.toLocaleString()}–
+                    {rangeEnd.toLocaleString()} of{' '}
+                    {sorted.length.toLocaleString()} · Page {safePage} of{' '}
                     {totalPages}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">

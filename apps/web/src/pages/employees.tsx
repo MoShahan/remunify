@@ -367,8 +367,16 @@ export default function EmployeesPage() {
           {pagination ? (
             <div className="flex flex-col gap-3 border-t border-border/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
-                Page {pagination.page} of {pagination.totalPages} ·{' '}
-                {pagination.total.toLocaleString()} employees
+                {pagination.total === 0
+                  ? 'Showing 0 of 0'
+                  : `Showing ${(
+                      (pagination.page - 1) * pagination.pageSize +
+                      1
+                    ).toLocaleString()}–${Math.min(
+                      pagination.page * pagination.pageSize,
+                      pagination.total,
+                    ).toLocaleString()} of ${pagination.total.toLocaleString()}`}{' '}
+                · Page {pagination.page} of {pagination.totalPages}
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <Button

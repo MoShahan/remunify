@@ -25,7 +25,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { PREVIEW_ROW_LIMIT } from '@/features/analytics/rollup-table-model'
+import {
+  PREVIEW_ROW_LIMIT,
+  previewRangeLabel,
+} from '@/features/analytics/rollup-table-model'
 import { AnalyticsRollupTable } from '@/features/analytics/rollup-tables'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
 import { useExportActions } from '@/features/export/use-export'
@@ -269,8 +272,8 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>By currency</CardTitle>
                 <CardDescription>
-                  Current salaries only - totals stay in their own currency.
-                  Showing top {PREVIEW_ROW_LIMIT} rows.
+                  Current salaries only - totals stay in their own currency.{' '}
+                  {previewRangeLabel(query.data.byCurrency.length)}.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -324,8 +327,8 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>By country</CardTitle>
                 <CardDescription>
-                  Current salaries grouped by country and currency. Showing top{' '}
-                  {PREVIEW_ROW_LIMIT} rows.
+                  Current salaries grouped by country and currency.{' '}
+                  {previewRangeLabel(query.data.byCountry.length)}.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -345,8 +348,8 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>By department</CardTitle>
                 <CardDescription>
-                  Current salaries grouped by department and currency. Showing
-                  top {PREVIEW_ROW_LIMIT} rows.
+                  Current salaries grouped by department and currency.{' '}
+                  {previewRangeLabel(query.data.byDepartment.length)}.
                 </CardDescription>
               </CardHeader>
               <CardContent>

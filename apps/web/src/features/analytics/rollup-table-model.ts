@@ -3,6 +3,16 @@ import type { AnalyticsSummary, CurrencyAgg } from '@/lib/api'
 export const PREVIEW_ROW_LIMIT = 8
 export const TABLES_PAGE_SIZE = 25
 
+/** e.g. "Showing 1–8 of 42" for preview cards. */
+export function previewRangeLabel(
+  total: number,
+  limit: number = PREVIEW_ROW_LIMIT,
+): string {
+  if (total <= 0) return 'Showing 0 of 0'
+  const end = Math.min(limit, total)
+  return `Showing 1–${end.toLocaleString()} of ${total.toLocaleString()}`
+}
+
 export type TableViewId = 'currency' | 'country' | 'department'
 
 export type CountryRollupRow = AnalyticsSummary['byCountry'][number]
