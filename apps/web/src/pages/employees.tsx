@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type KeyboardEvent } from 'react'
 import {
   keepPreviousData,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query'
+import { ArrowDown, ArrowUp } from 'lucide-react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { CountryFlag } from '@/components/country-flag'
 import { EmptyState } from '@/components/empty-state'
 import { ErrorState } from '@/components/error-state'
 import { MoneyText } from '@/components/money-text'
@@ -32,15 +34,20 @@ import { useDebounce } from '@/hooks/use-debounce'
 import {
   employeeKeys,
   getEmployee,
+  getEmployeeFacets,
   listEmployees,
   type EmployeeListParams,
   type EmploymentStatus,
 } from '@/lib/api'
+import { cn } from '@/lib/utils'
+
+type SortableColumn = 'fullName' | 'employeeNumber' | 'department'
 
 function readParams(searchParams: URLSearchParams): EmployeeListParams {
   const page = Number(searchParams.get('page') ?? '1')
   const pageSize = Number(searchParams.get('pageSize') ?? '20')
   const status = searchParams.get('status')
+  const sortBy = searchParams.get('sortBy') as EmployeeListParams['sortBy']
   return {
     page: Number.isFinite(page) && page > 0 ? page : 1,
     pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20,
@@ -51,13 +58,49 @@ function readParams(searchParams: URLSearchParams): EmployeeListParams {
       status === 'ACTIVE' || status === 'INACTIVE'
         ? (status as EmploymentStatus)
         : undefined,
-    sortBy:
-      (searchParams.get('sortBy') as EmployeeListParams['sortBy']) ??
-      'fullName',
+    sortBy: sortBy ?? 'fullName',
     sortOrder:
       (searchParams.get('sortOrder') as EmployeeListParams['sortOrder']) ??
       'asc',
   }
+}
+
+function SortableTableHead({
+  label,
+  column,
+  activeColumn,
+  sortOrder,
+  onSort,
+}: {
+  label: string
+  column: SortableColumn
+  activeColumn: string | undefined
+  sortOrder: 'asc' | 'desc' | undefined
+  onSort: (column: SortableColumn) => void
+}) {
+  const active = activeColumn === column
+  return (
+    <TableHead>
+      <button
+        type="button"
+        className={cn(
+          'inline-flex items-center gap-1 font-medium transition-colors hover:text-foreground',
+          active ? 'text-primary' : 'text-muted-foreground',
+        )}
+        onClick={() => onSort(column)}
+        aria-label={`Sort by ${label}`}
+      >
+        {label}
+        {active ? (
+          sortOrder === 'desc' ? (
+            <ArrowDown className="h-3.5 w-3.5" aria-hidden />
+          ) : (
+            <ArrowUp className="h-3.5 w-3.5" aria-hidden />
+          )
+        ) : null}
+      </button>
+    </TableHead>
+  )
 }
 
 export default function EmployeesPage() {
@@ -72,6 +115,13 @@ export default function EmployeesPage() {
   if (urlSearch !== prevUrlSearch) {
     setPrevUrlSearch(urlSearch)
     setSearchInput(urlSearch)
+  }
+
+  const [pageInput, setPageInput] = useState(String(params.page ?? 1))
+  const [prevPage, setPrevPage] = useState(params.page ?? 1)
+  if ((params.page ?? 1) !== prevPage) {
+    setPrevPage(params.page ?? 1)
+    setPageInput(String(params.page ?? 1))
   }
 
   const debouncedSearch = useDebounce(searchInput, 300)
@@ -98,12 +148,54 @@ export default function EmployeesPage() {
     staleTime: 30_000,
   })
 
-  const updateParam = (key: string, value: string | undefined) => {
+  const facetsQuery = useQuery({
+    queryKey: employeeKeys.facets(),
+    queryFn: async () => {
+      const res = await getEmployeeFacets()
+      return res.data
+    },
+    staleTime: 60_000,
+  })
+
+  const updateParams = (updates: Record<string, string | undefined>) => {
     const next = new URLSearchParams(searchParams)
-    if (!value || value === 'all') next.delete(key)
-    else next.set(key, value)
-    if (key !== 'page') next.set('page', '1')
+    let resetsPage = false
+    for (const [key, value] of Object.entries(updates)) {
+      if (!value || value === 'all') next.delete(key)
+      else next.set(key, value)
+      if (key !== 'page') resetsPage = true
+    }
+    if (resetsPage && !('page' in updates)) next.set('page', '1')
     setSearchParams(next)
+  }
+
+  const handleSort = (column: SortableColumn) => {
+    const current = params.sortBy ?? 'fullName'
+    const currentOrder = params.sortOrder ?? 'asc'
+    if (current === column) {
+      updateParams({
+        sortBy: column,
+        sortOrder: currentOrder === 'asc' ? 'desc' : 'asc',
+      })
+      return
+    }
+    updateParams({ sortBy: column, sortOrder: 'asc' })
+  }
+
+  const goToPage = () => {
+    const totalPages = query.data?.pagination.totalPages ?? 1
+    const raw = Number(pageInput)
+    if (!Number.isFinite(raw) || pageInput.trim() === '') return
+    const clamped = Math.min(Math.max(Math.trunc(raw), 1), totalPages)
+    setPageInput(String(clamped))
+    updateParams({ page: String(clamped) })
+  }
+
+  const onPageKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault()
+      goToPage()
+    }
   }
 
   const pagination = query.data?.pagination
@@ -125,7 +217,7 @@ export default function EmployeesPage() {
         />
         <Select
           value={params.status ?? 'all'}
-          onValueChange={(value) => updateParam('status', value)}
+          onValueChange={(value) => updateParams({ status: value })}
         >
           <SelectTrigger className="w-full lg:w-40">
             <SelectValue placeholder="Status" />
@@ -136,47 +228,49 @@ export default function EmployeesPage() {
             <SelectItem value="INACTIVE">Inactive</SelectItem>
           </SelectContent>
         </Select>
-        <Input
-          placeholder="Country"
-          value={params.country ?? ''}
-          onChange={(e) => updateParam('country', e.target.value || undefined)}
-          className="lg:max-w-[10rem]"
-          aria-label="Filter by country"
-        />
-        <Input
-          placeholder="Department"
-          value={params.department ?? ''}
-          onChange={(e) =>
-            updateParam('department', e.target.value || undefined)
-          }
-          className="lg:max-w-[12rem]"
-          aria-label="Filter by department"
-        />
         <Select
-          value={`${params.sortBy ?? 'fullName'}:${params.sortOrder ?? 'asc'}`}
-          onValueChange={(value) => {
-            const [sortBy, sortOrder] = value.split(':')
-            updateParam('sortBy', sortBy)
-            updateParam('sortOrder', sortOrder)
-          }}
+          value={params.country ?? 'all'}
+          onValueChange={(value) => updateParams({ country: value })}
         >
-          <SelectTrigger className="w-full lg:w-52">
-            <SelectValue placeholder="Sort" />
+          <SelectTrigger
+            className="w-full lg:w-52"
+            aria-label="Filter by country"
+          >
+            <SelectValue placeholder="Country" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="fullName:asc">Name A–Z</SelectItem>
-            <SelectItem value="fullName:desc">Name Z–A</SelectItem>
-            <SelectItem value="employeeNumber:asc">Number ↑</SelectItem>
-            <SelectItem value="department:asc">Department</SelectItem>
-            <SelectItem value="country:asc">Country</SelectItem>
-            <SelectItem value="createdAt:desc">Newest</SelectItem>
+            <SelectItem value="all">All countries</SelectItem>
+            {(facetsQuery.data?.countries ?? []).map((country) => (
+              <SelectItem key={country} value={country}>
+                <CountryFlag country={country} />
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select
+          value={params.department ?? 'all'}
+          onValueChange={(value) => updateParams({ department: value })}
+        >
+          <SelectTrigger
+            className="w-full lg:w-48"
+            aria-label="Filter by department"
+          >
+            <SelectValue placeholder="Department" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All departments</SelectItem>
+            {(facetsQuery.data?.departments ?? []).map((department) => (
+              <SelectItem key={department} value={department}>
+                {department}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
 
       {query.isLoading ? <DataTableSkeleton /> : null}
 
-      {query.isError ? (
+      {query.isError && !query.data ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
       ) : null}
 
@@ -194,11 +288,29 @@ export default function EmployeesPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Number</TableHead>
+                <SortableTableHead
+                  label="Name"
+                  column="fullName"
+                  activeColumn={params.sortBy}
+                  sortOrder={params.sortOrder}
+                  onSort={handleSort}
+                />
+                <SortableTableHead
+                  label="Number"
+                  column="employeeNumber"
+                  activeColumn={params.sortBy}
+                  sortOrder={params.sortOrder}
+                  onSort={handleSort}
+                />
                 <TableHead>Email</TableHead>
                 <TableHead>Country</TableHead>
-                <TableHead>Department</TableHead>
+                <SortableTableHead
+                  label="Department"
+                  column="department"
+                  activeColumn={params.sortBy}
+                  sortOrder={params.sortOrder}
+                  onSort={handleSort}
+                />
                 <TableHead>Status</TableHead>
                 <TableHead>Current salary</TableHead>
               </TableRow>
@@ -234,7 +346,9 @@ export default function EmployeesPage() {
                   <TableCell className="max-w-[14rem] truncate text-muted-foreground">
                     {employee.email}
                   </TableCell>
-                  <TableCell>{employee.country}</TableCell>
+                  <TableCell>
+                    <CountryFlag country={employee.country} />
+                  </TableCell>
                   <TableCell>{employee.department}</TableCell>
                   <TableCell>
                     <StatusBadge status={employee.status} />
@@ -256,25 +370,45 @@ export default function EmployeesPage() {
                 Page {pagination.page} of {pagination.totalPages} ·{' '}
                 {pagination.total.toLocaleString()} employees
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   disabled={pagination.page <= 1}
                   onClick={() =>
-                    updateParam('page', String(pagination.page - 1))
+                    updateParams({ page: String(pagination.page - 1) })
                   }
                 >
                   Previous
                 </Button>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="number"
+                    min={1}
+                    max={pagination.totalPages}
+                    value={pageInput}
+                    onChange={(e) => setPageInput(e.target.value)}
+                    onKeyDown={onPageKeyDown}
+                    className="h-8 w-16"
+                    aria-label="Go to page"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={goToPage}
+                  >
+                    Go
+                  </Button>
+                </div>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
                   disabled={pagination.page >= pagination.totalPages}
                   onClick={() =>
-                    updateParam('page', String(pagination.page + 1))
+                    updateParams({ page: String(pagination.page + 1) })
                   }
                 >
                   Next
