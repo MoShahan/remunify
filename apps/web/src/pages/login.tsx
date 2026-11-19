@@ -65,7 +65,7 @@ export default function LoginPage() {
 
   return (
     <div className="relative flex min-h-svh">
-      <div className="absolute inset-0 bg-[radial-gradient(900px_500px_at_15%_10%,hsl(168_55%_88%_/_0.85),transparent_55%),radial-gradient(700px_400px_at_90%_80%,hsl(173_40%_92%_/_0.7),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(900px_500px_at_15%_10%,hsl(270_55%_90%_/_0.9),transparent_55%),radial-gradient(700px_400px_at_90%_80%,hsl(262_40%_92%_/_0.75),transparent_50%)]" />
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col justifying-center gap-10 px-6 py-12 lg:flex-row lg:items-center lg:gap-16">
         <div className="max-w-md flex-1 animate-in fade-in-0 slide-in-from-left-2 duration-500">

@@ -5,29 +5,29 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --brand: 173 58% 26%;
-  --brand-foreground: 166 76% 97%;
-  --brand-muted: 168 40% 94%;
+  --brand: 262 52% 36%;
+  --brand-foreground: 270 80% 97%;
+  --brand-muted: 270 45% 95%;
 
-  --background: 40 20% 98%;
-  --foreground: 200 25% 12%;
+  --background: 270 25% 98%;
+  --foreground: 270 25% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 200 25% 12%;
+  --card-foreground: 270 25% 12%;
   --popover: 0 0% 100%;
-  --popover-foreground: 200 25% 12%;
-  --primary: 173 58% 26%;
-  --primary-foreground: 166 76% 97%;
-  --secondary: 168 25% 93%;
-  --secondary-foreground: 173 40% 18%;
-  --muted: 40 14% 94%;
-  --muted-foreground: 200 10% 40%;
-  --accent: 168 35% 92%;
-  --accent-foreground: 173 45% 20%;
+  --popover-foreground: 270 25% 12%;
+  --primary: 262 52% 36%;
+  --primary-foreground: 270 80% 97%;
+  --secondary: 270 30% 94%;
+  --secondary-foreground: 262 40% 22%;
+  --muted: 270 18% 95%;
+  --muted-foreground: 270 10% 40%;
+  --accent: 270 35% 93%;
+  --accent-foreground: 262 40% 24%;
   --destructive: 0 72% 48%;
   --destructive-foreground: 0 0% 100%;
-  --border: 180 12% 88%;
-  --input: 180 12% 88%;
-  --ring: 173 58% 26%;
+  --border: 270 14% 88%;
+  --input: 270 14% 88%;
+  --ring: 262 52% 36%;
   --radius: 0.75rem;
 
   --font-sans-family: 'Manrope', ui-sans-serif, system-ui, sans-serif;
@@ -35,7 +35,7 @@
 
   --surface-glow: radial-gradient(
     1200px 600px at 10% -10%,
-    hsl(168 55% 88% / 0.7),
+    hsl(270 55% 90% / 0.75),
     transparent 55%
   );
 }

@@ -82,15 +82,15 @@ export default function AnalyticsPage() {
                     width={40}
                   />
                   <Tooltip
-                    cursor={{ fill: 'hsl(168 40% 94% / 0.6)' }}
+                    cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
                     contentStyle={{
                       borderRadius: 8,
-                      border: '1px solid hsl(180 12% 88%)',
+                      border: '1px solid hsl(270 14% 88%)',
                     }}
                   />
                   <Bar
                     dataKey="employees"
-                    fill="hsl(173 58% 26%)"
+                    fill="hsl(262 52% 36%)"
                     radius={[6, 6, 0, 0]}
                   />
                 </BarChart>

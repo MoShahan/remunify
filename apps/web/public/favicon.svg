@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Remunify">
   <defs>
     <linearGradient id="bg" x1="6" y1="2" x2="26" y2="30" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0D9488"/>
-      <stop offset="1" stop-color="#0F766E"/>
+      <stop stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#5B21B6"/>
     </linearGradient>
   </defs>
   <!-- Rounded app tile -->
@@ -11,12 +11,12 @@
   <path
     d="M7.5 8.5c5-2.8 12-2.8 17 0"
     fill="none"
-    stroke="#ECFDF5"
+    stroke="#F5F3FF"
     stroke-width="2"
     stroke-linecap="round"
   />
   <!-- Ascending bars: compensation growth (clear of the arc) -->
-  <rect x="7" y="18" width="4" height="7" rx="1.2" fill="#99F6E4"/>
-  <rect x="14" y="14" width="4" height="11" rx="1.2" fill="#5EEAD4"/>
-  <rect x="21" y="10" width="4" height="15" rx="1.2" fill="#F0FDFA"/>
+  <rect x="7" y="18" width="4" height="7" rx="1.2" fill="#C4B5FD"/>
+  <rect x="14" y="14" width="4" height="11" rx="1.2" fill="#A78BFA"/>
+  <rect x="21" y="10" width="4" height="15" rx="1.2" fill="#EDE9FE"/>
 </svg>
