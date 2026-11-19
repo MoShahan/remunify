@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -12,15 +13,16 @@ import {
   YAxis,
 } from 'recharts'
 import { ErrorState } from '@/components/error-state'
-import { CurrencyCode, MoneyText } from '@/components/money-text'
+import { MoneyText } from '@/components/money-text'
 import { PageHeader } from '@/components/page-header'
-import { ScrollableTable } from '@/components/scrollable-table'
 import { CardSkeleton, KpiSkeleton } from '@/components/skeletons'
 import { StaleDataBanner } from '@/components/stale-data-banner'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -31,14 +33,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
+import { PREVIEW_ROW_LIMIT } from '@/features/analytics/rollup-table-model'
+import { AnalyticsRollupTable } from '@/features/analytics/rollup-tables'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
 import { formatMoneyAmount } from '@/lib/format-money'
 
@@ -368,101 +364,41 @@ export default function AnalyticsPage() {
                 <CardTitle>By country</CardTitle>
                 <CardDescription>
                   Totals stay with their currency - never summed across FX.
+                  Showing top {PREVIEW_ROW_LIMIT} rows.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollableTable>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Country</TableHead>
-                        <TableHead>Currency</TableHead>
-                        <TableHead>Employees</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Average</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {query.data.byCountry.map((row) => (
-                        <TableRow key={`${row.country}-${row.currency}`}>
-                          <TableCell className="font-medium">
-                            {row.country}
-                          </TableCell>
-                          <TableCell>
-                            <CurrencyCode code={row.currency} />
-                          </TableCell>
-                          <TableCell className="tabular-nums">
-                            {row.employeeCount.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <MoneyText
-                              amount={row.totalAmount}
-                              currency={row.currency}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <MoneyText
-                              amount={row.averageAmount}
-                              currency={row.currency}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollableTable>
+                <AnalyticsRollupTable
+                  view="country"
+                  rows={query.data.byCountry.slice(0, PREVIEW_ROW_LIMIT)}
+                />
               </CardContent>
+              <CardFooter>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/tables?view=country">View full table</Link>
+                </Button>
+              </CardFooter>
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>By department</CardTitle>
                 <CardDescription>
-                  Department rollups grouped with currency.
+                  Department rollups grouped with currency. Showing top{' '}
+                  {PREVIEW_ROW_LIMIT} rows.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <ScrollableTable>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Department</TableHead>
-                        <TableHead>Currency</TableHead>
-                        <TableHead>Employees</TableHead>
-                        <TableHead>Total</TableHead>
-                        <TableHead>Average</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {query.data.byDepartment.map((row) => (
-                        <TableRow key={`${row.department}-${row.currency}`}>
-                          <TableCell className="font-medium">
-                            {row.department}
-                          </TableCell>
-                          <TableCell>
-                            <CurrencyCode code={row.currency} />
-                          </TableCell>
-                          <TableCell className="tabular-nums">
-                            {row.employeeCount.toLocaleString()}
-                          </TableCell>
-                          <TableCell>
-                            <MoneyText
-                              amount={row.totalAmount}
-                              currency={row.currency}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <MoneyText
-                              amount={row.averageAmount}
-                              currency={row.currency}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </ScrollableTable>
+                <AnalyticsRollupTable
+                  view="department"
+                  rows={query.data.byDepartment.slice(0, PREVIEW_ROW_LIMIT)}
+                />
               </CardContent>
+              <CardFooter>
+                <Button asChild variant="outline" size="sm">
+                  <Link to="/tables?view=department">View full table</Link>
+                </Button>
+              </CardFooter>
             </Card>
           </div>
 

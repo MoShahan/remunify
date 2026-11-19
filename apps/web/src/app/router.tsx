@@ -10,6 +10,7 @@ const DashboardPage = lazy(() => import('@/pages/dashboard'))
 const EmployeesPage = lazy(() => import('@/pages/employees'))
 const EmployeeDetailPage = lazy(() => import('@/pages/employee-detail'))
 const AnalyticsPage = lazy(() => import('@/pages/analytics'))
+const TablesPage = lazy(() => import('@/pages/tables'))
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
@@ -62,6 +63,14 @@ export function AppRouter() {
               element={
                 <LazyPage>
                   <AnalyticsPage />
+                </LazyPage>
+              }
+            />
+            <Route
+              path="/tables"
+              element={
+                <LazyPage>
+                  <TablesPage />
                 </LazyPage>
               }
             />

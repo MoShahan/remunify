@@ -26,6 +26,7 @@ const navItems = [
   { to: '/dashboard', label: 'Dashboard' },
   { to: '/employees', label: 'Employees' },
   { to: '/analytics', label: 'Analytics' },
+  { to: '/tables', label: 'Tables' },
 ] as const
 
 function NavItems({
