@@ -110,6 +110,24 @@ npm run db:seed
 
 Seed: `apps/api/prisma/seed.ts` (deterministic; re-run clears and reloads). Default HR login: `hr@remunify.com` / `HR@123` (override via `HR_EMAIL` / `HR_PASSWORD`).
 
+Also set `JWT_SECRET` (and optional `JWT_EXPIRES_IN`, default `8h`) in `apps/api/.env`.
+
+### API (auth required except health + login)
+
+| Method         | Path                                        | Notes                                                    |
+| -------------- | ------------------------------------------- | -------------------------------------------------------- |
+| `POST`         | `/api/auth/login`                           | Body `{ email, password }` → `{ data: { token, user } }` |
+| `GET`          | `/api/employees`                            | Paged directory (Bearer token)                           |
+| `GET`          | `/api/employees/:id`                        | Detail + `salaryHistory`                                 |
+| `GET`          | `/api/employees/:employeeId/salary`         | Current salary                                           |
+| `GET`          | `/api/employees/:employeeId/salary/history` | Full history                                             |
+| `POST`/`PATCH` | `/api/employees/:employeeId/salary`         | Create first salary / record raise                       |
+| `GET`          | `/api/analytics/summary`                    | Per-currency + USD demo FX rollup                        |
+| `GET`          | `/api/export/employees.csv`                 | CSV download (current salaries)                          |
+| `GET`          | `/api/export/employees.xlsx`                | Excel download (current salaries)                        |
+
+Send `Authorization: Bearer <token>` on protected routes. Errors use `{ error: { code, message, details } }` with descriptive messages.
+
 ### Git hooks
 
 On commit, Husky runs **lint-staged** on **staged files only**:
