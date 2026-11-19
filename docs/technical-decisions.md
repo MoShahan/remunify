@@ -12,13 +12,13 @@
 | Backend     | Node + Express + TypeScript             | Aligns with Node/React/TS role                    |
 | DB          | PostgreSQL + Prisma                     | Relational requirement; typed access + migrations |
 | Validation  | Zod                                     | Trusted API boundary; no `any`                    |
-| Client data | TanStack Query (planned)                | Server state, cache, loading/error                |
-| Charts      | Recharts only if a metric needs a chart | Avoid decorative charts                           |
+| Client data | TanStack Query                          | Server state, cache, loading/error                |
+| Charts      | Recharts on Analytics                   | Currency headcount chart; tables elsewhere        |
 | API tests   | Vitest + Supertest                      | Fast, deterministic                               |
 | UI tests    | Vitest + React Testing Library          | Behavior over markup                              |
-| E2E         | Playwright for a few critical flows     | Login + core HR path later                        |
-| CI          | GitHub Actions                          | Lint, typecheck, test on PR/push                  |
-| Deploy      | Practical free/low-cost host (TBD)      | Required deliverable                              |
+| E2E         | Playwright for a few critical flows     | Login + core HR path later (post v1 hardening)    |
+| CI          | GitHub Actions                          | Format, lint, typecheck, test, build on PR/push   |
+| Deploy      | Practical free/low-cost host (Phase 7)  | Required deliverable                              |
 
 ## Deliberate non-choices
 
