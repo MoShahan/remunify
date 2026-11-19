@@ -173,27 +173,58 @@ export default function DashboardPage() {
                   Headcount by employment status.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="h-56">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={statusChart}
-                      dataKey="value"
-                      nameKey="name"
-                      innerRadius={48}
-                      outerRadius={72}
-                      paddingAngle={2}
+              <CardContent className="flex h-56 flex-col gap-3">
+                <div className="min-h-0 flex-1">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={statusChart}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={40}
+                        outerRadius={62}
+                        paddingAngle={2}
+                        label={({ value }) =>
+                          typeof value === 'number'
+                            ? value.toLocaleString()
+                            : String(value ?? '')
+                        }
+                        labelLine={false}
+                      >
+                        {statusChart.map((entry, index) => (
+                          <Cell
+                            key={entry.name}
+                            fill={STATUS_COLORS[index % STATUS_COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <ul className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm">
+                  {statusChart.map((entry, index) => (
+                    <li
+                      key={entry.name}
+                      className="inline-flex items-center gap-2"
                     >
-                      {statusChart.map((entry, index) => (
-                        <Cell
-                          key={entry.name}
-                          fill={STATUS_COLORS[index % STATUS_COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                      <span
+                        className="h-2.5 w-2.5 rounded-sm"
+                        style={{
+                          backgroundColor:
+                            STATUS_COLORS[index % STATUS_COLORS.length],
+                        }}
+                        aria-hidden
+                      />
+                      <span className="text-muted-foreground">
+                        {entry.name}
+                      </span>
+                      <span className="font-medium tabular-nums">
+                        {entry.value.toLocaleString()}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
 
