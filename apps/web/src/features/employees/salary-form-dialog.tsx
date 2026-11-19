@@ -20,19 +20,31 @@ import {
   raiseSalary,
   type Salary,
 } from '@/lib/api'
+import { formatMoneyAmount } from '@/lib/format-money'
 
-const salarySchema = z.object({
-  amount: z
-    .string()
-    .min(1, 'Amount is required.')
-    .refine((v) => Number(v) > 0, 'Amount must be greater than zero.'),
-  currency: z
-    .string()
-    .trim()
-    .length(3, 'Currency must be a 3-letter ISO code.')
-    .transform((v) => v.toUpperCase()),
-  effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD.'),
-})
+function buildSalarySchema(mode: 'create' | 'raise', currentAmount?: string) {
+  return z.object({
+    amount: z
+      .string()
+      .min(1, 'Amount is required.')
+      .refine((v) => Number(v) > 0, 'Amount must be greater than zero.')
+      .superRefine((value, ctx) => {
+        if (mode !== 'raise' || currentAmount === undefined) return
+        if (!(Number(value) > Number(currentAmount))) {
+          ctx.addIssue({
+            code: 'custom',
+            message: `Raise amount must be greater than the current salary (${formatMoneyAmount(currentAmount)}).`,
+          })
+        }
+      }),
+    currency: z
+      .string()
+      .trim()
+      .length(3, 'Currency must be a 3-letter ISO code.')
+      .transform((v) => v.toUpperCase()),
+    effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD.'),
+  })
+}
 
 type SalaryFormDialogProps = {
   open: boolean
@@ -73,7 +85,8 @@ export function SalaryFormDialog({
     event.preventDefault()
     setFieldErrors({})
 
-    const parsed = salarySchema.safeParse({ amount, currency, effectiveFrom })
+    const schema = buildSalarySchema(mode, currentSalary?.amount)
+    const parsed = schema.safeParse({ amount, currency, effectiveFrom })
     if (!parsed.success) {
       const next: Record<string, string> = {}
       for (const issue of parsed.error.issues) {
@@ -110,6 +123,9 @@ export function SalaryFormDialog({
           'currentEffectiveFrom' in error.details
         ) {
           mapped.effectiveFrom = error.message
+        }
+        if (/greater than the current salary/i.test(error.message)) {
+          mapped.amount = error.message
         }
         if (Object.keys(mapped).length > 0) {
           setFieldErrors(mapped)
@@ -151,6 +167,16 @@ export function SalaryFormDialog({
               onChange={(e) => setAmount(e.target.value)}
               className="mt-1.5"
             />
+            {mode === 'raise' && currentSalary ? (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                Must be greater than current{' '}
+                {formatMoneyAmount(
+                  currentSalary.amount,
+                  currentSalary.currency,
+                )}{' '}
+                {currentSalary.currency}.
+              </p>
+            ) : null}
             <FormFieldError message={fieldErrors.amount} />
           </div>
           <div>
