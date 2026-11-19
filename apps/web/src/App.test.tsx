@@ -3,21 +3,11 @@ import { describe, expect, it } from 'vitest'
 import App from './App'
 
 describe('App', () => {
-  it('renders Remunify branding and primary actions', () => {
+  it('routes unauthenticated users to the login screen', async () => {
+    localStorage.clear()
     render(<App />)
 
-    expect(screen.getByText('Remunify')).toBeInTheDocument()
-    expect(
-      screen.getByText('Salary management for modern HR teams'),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Open directory' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'View dashboard' }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: 'Browse employees' }),
-    ).toBeInTheDocument()
+    expect(await screen.findByText('Remunify')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
   })
 })
