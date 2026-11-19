@@ -190,6 +190,82 @@ export default function DashboardPage() {
               </CardContent>
             </Card>
           </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>By country</CardTitle>
+                <CardDescription>
+                  Current salaries grouped by country and currency.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Country</TableHead>
+                      <TableHead>Currency</TableHead>
+                      <TableHead>Employees</TableHead>
+                      <TableHead>Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {query.data.byCountry.map((row) => (
+                      <TableRow key={`${row.country}-${row.currency}`}>
+                        <TableCell className="font-medium">
+                          {row.country}
+                        </TableCell>
+                        <TableCell>{row.currency}</TableCell>
+                        <TableCell className="tabular-nums">
+                          {row.employeeCount.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <MoneyText amount={row.totalAmount} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>By department</CardTitle>
+                <CardDescription>
+                  Current salaries grouped by department and currency.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Currency</TableHead>
+                      <TableHead>Employees</TableHead>
+                      <TableHead>Total</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {query.data.byDepartment.map((row) => (
+                      <TableRow key={`${row.department}-${row.currency}`}>
+                        <TableCell className="font-medium">
+                          {row.department}
+                        </TableCell>
+                        <TableCell>{row.currency}</TableCell>
+                        <TableCell className="tabular-nums">
+                          {row.employeeCount.toLocaleString()}
+                        </TableCell>
+                        <TableCell>
+                          <MoneyText amount={row.totalAmount} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       ) : null}
     </div>
