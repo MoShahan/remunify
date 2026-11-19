@@ -1,7 +1,9 @@
 import { apiJson } from './client'
 import type {
   EmployeeDetail,
+  EmployeeFacets,
   EmployeeListParams,
+  EmploymentStatus,
   ListEmployeesResponse,
   Salary,
   SalaryInput,
@@ -21,8 +23,22 @@ export async function listEmployees(params: EmployeeListParams = {}) {
   return apiJson<ListEmployeesResponse>(`/api/employees${toQuery(params)}`)
 }
 
+export async function getEmployeeFacets() {
+  return apiJson<{ data: EmployeeFacets }>('/api/employees/facets')
+}
+
 export async function getEmployee(id: string) {
   return apiJson<{ data: EmployeeDetail }>(`/api/employees/${id}`)
+}
+
+export async function updateEmployeeStatus(
+  id: string,
+  status: EmploymentStatus,
+) {
+  return apiJson<{ data: EmployeeDetail }>(`/api/employees/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status }),
+  })
 }
 
 export async function createSalary(employeeId: string, input: SalaryInput) {
@@ -44,6 +60,7 @@ export const employeeKeys = {
   lists: () => [...employeeKeys.all, 'list'] as const,
   list: (params: EmployeeListParams) =>
     [...employeeKeys.lists(), params] as const,
+  facets: () => [...employeeKeys.all, 'facets'] as const,
   details: () => [...employeeKeys.all, 'detail'] as const,
   detail: (id: string) => [...employeeKeys.details(), id] as const,
 }
