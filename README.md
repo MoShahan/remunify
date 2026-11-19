@@ -108,7 +108,7 @@ npm run db:seed
 | `npm run db:migrate:dev` | Dev migrations (`prisma migrate dev`)                         |
 | `npm run db:seed`        | Seed **10,000** employees + salary history + FxRate + HR user |
 
-Seed: `apps/api/prisma/seed.ts` (deterministic; re-run clears and reloads). Optional `HR_EMAIL` / `HR_PASSWORD` in `apps/api/.env`.
+Seed: `apps/api/prisma/seed.ts` (deterministic; re-run clears and reloads). Default HR login: `hr@remunify.com` / `HR@123` (override via `HR_EMAIL` / `HR_PASSWORD`).
 
 ### Git hooks
 
