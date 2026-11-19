@@ -77,7 +77,9 @@ export async function createSalaryForEmployee(
   const existing = await findCurrentSalary(employeeId)
 
   if (existing) {
-    throw conflict(`Salary already exists for employee: ${employeeId}`)
+    throw conflict(
+      `Salary already exists for employee: ${employeeId}. Use PATCH to record a raise.`,
+    )
   }
 
   const salary = await prisma.salary.create({
@@ -106,12 +108,12 @@ export async function updateSalaryForEmployee(
     throw notFound(`Salary not found for employee: ${employeeId}`)
   }
 
+  const currentEffectiveFrom = current.effectiveFrom.toISOString().slice(0, 10)
+
   if (body.effectiveFrom <= current.effectiveFrom) {
     throw badRequest(
-      'effectiveFrom must be after the current salary effective date',
-      {
-        currentEffectiveFrom: current.effectiveFrom.toISOString().slice(0, 10),
-      },
+      `effectiveFrom must be after the current salary effective date (${currentEffectiveFrom}).`,
+      { currentEffectiveFrom },
     )
   }
 
