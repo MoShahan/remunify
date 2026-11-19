@@ -5,11 +5,11 @@ import { PageSkeleton } from '@/components/skeletons'
 import { AuthProvider } from '@/features/auth/auth-context'
 import { GuestOnly, RequireAuth } from '@/features/auth/require-auth'
 
-const LoginPage = lazy(() => import('@/pages/login-page'))
-const DashboardPage = lazy(() => import('@/pages/dashboard-page'))
-const EmployeesPage = lazy(() => import('@/pages/employees-page'))
-const EmployeeDetailPage = lazy(() => import('@/pages/employee-detail-page'))
-const AnalyticsPage = lazy(() => import('@/pages/analytics-page'))
+const LoginPage = lazy(() => import('@/pages/login'))
+const DashboardPage = lazy(() => import('@/pages/dashboard'))
+const EmployeesPage = lazy(() => import('@/pages/employees'))
+const EmployeeDetailPage = lazy(() => import('@/pages/employee-detail'))
+const AnalyticsPage = lazy(() => import('@/pages/analytics'))
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
