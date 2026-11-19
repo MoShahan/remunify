@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from 'react'
+import { type SubmitEvent, useState } from 'react'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { FormFieldError } from '@/components/form-field-error'
@@ -69,7 +69,7 @@ export function SalaryFormDialog({
     onOpenChange(next)
   }
 
-  const onSubmit = async (event: FormEvent) => {
+  const onSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
     setFieldErrors({})
 
