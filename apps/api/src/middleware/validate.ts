@@ -8,12 +8,21 @@ export function validate<T>(schema: ZodType<T>, part: RequestPart) {
   return (req: Request, _res: Response, next: NextFunction) => {
     const result = schema.safeParse(req[part])
     if (!result.success) {
-      next(badRequest('Validation failed', result.error.flatten().fieldErrors))
+      const fieldErrors = result.error.issues.map((issue) => ({
+        path: issue.path.join('.') || part,
+        message: issue.message,
+      }))
+
+      next(
+        badRequest(
+          `Validation failed for ${part}. Check the details for each invalid field.`,
+          fieldErrors,
+        ),
+      )
       return
     }
 
     if (part === 'query') {
-      // Express query is typed loosely; replace with parsed values for handlers.
       Object.defineProperty(req, 'query', {
         value: result.data,
         writable: true,
