@@ -33,6 +33,7 @@ apps/*/dist
 
 # Local-only hiring / agent working docs (not part of the product repo)
 PROJECT_PLAN.md
+next_plans.md
 docs/hiring-email.md
 docs/assessment.md
 
