@@ -143,6 +143,23 @@ describe('salaries.service', () => {
     })
   })
 
+  it('rejects raise when amount is not greater than current', async () => {
+    salaryFindFirstMock.mockResolvedValue(salaryRecord)
+
+    await expect(
+      updateSalaryForEmployee('emp_00001', {
+        amount: '90000.00',
+        currency: 'USD',
+        period: 'ANNUAL',
+        effectiveFrom: new Date('2024-06-01T00:00:00.000Z'),
+      }),
+    ).rejects.toMatchObject({
+      statusCode: 400,
+      code: 'BAD_REQUEST',
+      message: expect.stringContaining('greater than the current salary'),
+    })
+  })
+
   it('throws when employee is missing', async () => {
     employeeFindUniqueMock.mockResolvedValue(null)
 

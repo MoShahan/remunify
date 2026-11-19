@@ -20,7 +20,15 @@ describe('analytics.service', () => {
 
   it('maps SQL aggregates into a labeled multi-currency summary', async () => {
     transactionMock.mockResolvedValue([
-      [{ total: 10n, active: 8n, inactive: 2n }],
+      [
+        {
+          total: 10n,
+          active: 8n,
+          inactive: 2n,
+          with_salary: 9n,
+          without_salary: 1n,
+        },
+      ],
       [
         {
           currency: 'INR',
@@ -43,6 +51,7 @@ describe('analytics.service', () => {
           currency: 'INR',
           employee_count: 5n,
           total_amount: '1000.00',
+          average_amount: '200.00',
         },
       ],
       [
@@ -51,6 +60,7 @@ describe('analytics.service', () => {
           currency: 'USD',
           employee_count: 5n,
           total_amount: '500.00',
+          average_amount: '100.00',
         },
       ],
       [
@@ -64,12 +74,20 @@ describe('analytics.service', () => {
 
     const result = await getAnalyticsSummary()
 
-    expect(result.headcount).toEqual({ total: 10, active: 8, inactive: 2 })
+    expect(result.headcount).toEqual({
+      total: 10,
+      active: 8,
+      inactive: 2,
+      withSalary: 9,
+      withoutSalary: 1,
+    })
     expect(result.byCurrency).toHaveLength(2)
     expect(result.byCurrency[0]?.currency).toBe('INR')
     expect(result.companyWideUsd.label).toContain('demo FX')
     expect(result.companyWideUsd.ratesAsOf).toBe('2026-01-01')
     expect(result.byCountry[0]?.country).toBe('India')
+    expect(result.byCountry[0]?.averageAmount).toBe('200.00')
     expect(result.byDepartment[0]?.department).toBe('Engineering')
+    expect(result.byDepartment[0]?.averageAmount).toBe('100.00')
   })
 })

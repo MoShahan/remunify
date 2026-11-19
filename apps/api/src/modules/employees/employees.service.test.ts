@@ -12,19 +12,27 @@ const {
   transactionMock: vi.fn(),
 }))
 
+const employeeUpdateMock = vi.hoisted(() => vi.fn())
+
 vi.mock('../../db/prisma.js', () => ({
   prisma: {
     employee: {
       count: employeeCountMock,
       findMany: employeeFindManyMock,
       findUnique: employeeFindUniqueMock,
+      update: employeeUpdateMock,
     },
     $transaction: transactionMock,
   },
 }))
 
 import { AppError } from '../../lib/errors.js'
-import { getEmployeeById, listEmployees } from './employees.service.js'
+import {
+  getEmployeeById,
+  getEmployeeFacets,
+  listEmployees,
+  updateEmployeeStatus,
+} from './employees.service.js'
 
 const salaryRow = {
   id: 'sal_00001',
@@ -119,5 +127,54 @@ describe('employees.service', () => {
       statusCode: 404,
       code: 'NOT_FOUND',
     })
+  })
+
+  it('returns distinct countries and departments for facets', async () => {
+    employeeFindManyMock
+      .mockResolvedValueOnce([
+        { country: 'India' },
+        { country: 'United States' },
+      ])
+      .mockResolvedValueOnce([
+        { department: 'Engineering' },
+        { department: 'Finance' },
+      ])
+
+    const result = await getEmployeeFacets()
+
+    expect(result).toEqual({
+      countries: ['India', 'United States'],
+      departments: ['Engineering', 'Finance'],
+    })
+  })
+
+  it('updates employee status', async () => {
+    employeeFindUniqueMock.mockResolvedValue({ id: 'emp_00001' })
+    employeeUpdateMock.mockResolvedValue({
+      id: 'emp_00001',
+      employeeNumber: 'E00001',
+      fullName: 'Aisha Shah',
+      email: 'e00001@employees.remunify.local',
+      joinedAt: new Date('2022-01-01T00:00:00.000Z'),
+      country: 'India',
+      department: 'Engineering',
+      designation: 'Manager',
+      status: 'INACTIVE',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+      salaries: [salaryRow],
+    })
+
+    const result = await updateEmployeeStatus('emp_00001', {
+      status: 'INACTIVE',
+    })
+
+    expect(employeeUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'emp_00001' },
+        data: { status: 'INACTIVE' },
+      }),
+    )
+    expect(result.status).toBe('INACTIVE')
   })
 })

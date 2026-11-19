@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { listEmployeesQuerySchema } from './employees.schemas.js'
+import {
+  listEmployeesQuerySchema,
+  updateEmployeeBodySchema,
+} from './employees.schemas.js'
 
 describe('listEmployeesQuerySchema', () => {
   it('applies defaults for pagination and sorting', () => {
@@ -30,5 +33,22 @@ describe('listEmployeesQuerySchema', () => {
     expect(parsed.country).toBe('India')
     expect(parsed.status).toBe('ACTIVE')
     expect(parsed.sortBy).toBe('employeeNumber')
+  })
+})
+
+describe('updateEmployeeBodySchema', () => {
+  it('accepts ACTIVE or INACTIVE', () => {
+    expect(updateEmployeeBodySchema.parse({ status: 'ACTIVE' }).status).toBe(
+      'ACTIVE',
+    )
+    expect(updateEmployeeBodySchema.parse({ status: 'INACTIVE' }).status).toBe(
+      'INACTIVE',
+    )
+  })
+
+  it('rejects unknown status', () => {
+    expect(
+      updateEmployeeBodySchema.safeParse({ status: 'PENDING' }).success,
+    ).toBe(false)
   })
 })
