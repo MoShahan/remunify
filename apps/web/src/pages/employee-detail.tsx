@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import { toast } from 'sonner'
 import { EmptyState } from '@/components/empty-state'
 import { ErrorState } from '@/components/error-state'
 import { MoneyText } from '@/components/money-text'
@@ -16,9 +17,23 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SalaryFormDialog } from '@/features/employees/salary-form-dialog'
-import { employeeKeys, getEmployee } from '@/lib/api'
+import {
+  analyticsKeys,
+  employeeKeys,
+  getEmployee,
+  isApiError,
+  updateEmployeeStatus,
+  type EmploymentStatus,
+} from '@/lib/api'
 
 export default function EmployeeDetailPage() {
   const { id = '' } = useParams()
@@ -33,6 +48,27 @@ export default function EmployeeDetailPage() {
     },
     enabled: Boolean(id),
     staleTime: 30_000,
+  })
+
+  const statusMutation = useMutation({
+    mutationFn: (status: EmploymentStatus) => updateEmployeeStatus(id, status),
+    onSuccess: async (res) => {
+      queryClient.setQueryData(employeeKeys.detail(id), res.data)
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: employeeKeys.lists() }),
+        queryClient.invalidateQueries({ queryKey: analyticsKeys.summary() }),
+      ])
+      toast.success(
+        res.data.status === 'ACTIVE'
+          ? 'Employee marked active'
+          : 'Employee marked inactive',
+      )
+    },
+    onError: (error) => {
+      toast.error(
+        isApiError(error) ? error.message : 'Could not update status.',
+      )
+    },
   })
 
   const employee = query.data
@@ -61,7 +97,7 @@ export default function EmployeeDetailPage() {
         </div>
       ) : null}
 
-      {query.isError ? (
+      {query.isError && !employee ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
       ) : null}
 
@@ -70,7 +106,29 @@ export default function EmployeeDetailPage() {
           <PageHeader
             title={employee.fullName}
             description={`${employee.employeeNumber} · ${employee.designation} · ${employee.department}`}
-            actions={<StatusBadge status={employee.status} />}
+            actions={
+              <div className="flex items-center gap-3">
+                <StatusBadge status={employee.status} />
+                <Select
+                  value={employee.status}
+                  onValueChange={(value) =>
+                    statusMutation.mutate(value as EmploymentStatus)
+                  }
+                  disabled={statusMutation.isPending}
+                >
+                  <SelectTrigger
+                    className="w-[8.5rem]"
+                    aria-label="Employment status"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Active</SelectItem>
+                    <SelectItem value="INACTIVE">Inactive</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            }
           />
 
           <div className="grid gap-6 lg:grid-cols-2">
@@ -154,7 +212,7 @@ export default function EmployeeDetailPage() {
                   className="border-0 bg-transparent p-0"
                 />
               ) : (
-                <ol className="relative space-y-0 border-l border-border ml-2">
+                <ol className="relative ml-2 space-y-0 border-l border-border">
                   {employee.salaryHistory.map((row, index) => (
                     <li key={row.id} className="relative pb-8 pl-6 last:pb-0">
                       <span
@@ -194,7 +252,7 @@ export default function EmployeeDetailPage() {
                 queryKey: employeeKeys.lists(),
               })
               void queryClient.invalidateQueries({
-                queryKey: ['analytics'],
+                queryKey: analyticsKeys.summary(),
               })
             }}
           />
