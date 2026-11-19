@@ -322,6 +322,7 @@ export default function AnalyticsPage() {
                   <BarChart
                     data={avgByDepartment}
                     margin={{ top: 8, right: 16, left: 8, bottom: 40 }}
+                    barCategoryGap="28%"
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -353,6 +354,7 @@ export default function AnalyticsPage() {
                       name="Average"
                       fill="hsl(262 52% 36%)"
                       radius={[6, 6, 0, 0]}
+                      maxBarSize={48}
                     />
                   </BarChart>
                 </ResponsiveContainer>
