@@ -28,5 +28,10 @@ export const listEmployeesQuerySchema = z.object({
   sortOrder: z.enum(['asc', 'desc']).default('asc'),
 })
 
+export const updateEmployeeBodySchema = z.object({
+  status: employmentStatusSchema,
+})
+
 export type ListEmployeesQuery = z.infer<typeof listEmployeesQuerySchema>
 export type EmployeeIdParams = z.infer<typeof employeeIdParamsSchema>
+export type UpdateEmployeeBody = z.infer<typeof updateEmployeeBodySchema>

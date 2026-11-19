@@ -1,7 +1,10 @@
 import type { Prisma } from '@prisma/client'
 import { prisma } from '../../db/prisma.js'
 import { notFound } from '../../lib/errors.js'
-import type { ListEmployeesQuery } from './employees.schemas.js'
+import type {
+  ListEmployeesQuery,
+  UpdateEmployeeBody,
+} from './employees.schemas.js'
 
 const salaryFields = {
   id: true,
@@ -174,6 +177,48 @@ export async function getEmployeeById(id: string) {
   if (!employee) {
     throw notFound(`Employee not found: ${id}`)
   }
+
+  return serializeEmployeeDetail(employee)
+}
+
+export async function getEmployeeFacets() {
+  const [countries, departments] = await Promise.all([
+    prisma.employee.findMany({
+      distinct: ['country'],
+      select: { country: true },
+      orderBy: { country: 'asc' },
+    }),
+    prisma.employee.findMany({
+      distinct: ['department'],
+      select: { department: true },
+      orderBy: { department: 'asc' },
+    }),
+  ])
+
+  return {
+    countries: countries.map((row) => row.country),
+    departments: departments.map((row) => row.department),
+  }
+}
+
+export async function updateEmployeeStatus(
+  id: string,
+  body: UpdateEmployeeBody,
+) {
+  const existing = await prisma.employee.findUnique({
+    where: { id },
+    select: { id: true },
+  })
+
+  if (!existing) {
+    throw notFound(`Employee not found: ${id}`)
+  }
+
+  const employee = await prisma.employee.update({
+    where: { id },
+    data: { status: body.status },
+    select: employeeDetailSelect,
+  })
 
   return serializeEmployeeDetail(employee)
 }

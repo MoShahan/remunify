@@ -5,6 +5,7 @@ import * as employeesController from './employees.controller.js'
 import {
   employeeIdParamsSchema,
   listEmployeesQuerySchema,
+  updateEmployeeBodySchema,
 } from './employees.schemas.js'
 
 export const employeesRouter = Router()
@@ -16,7 +17,19 @@ employeesRouter.get(
 )
 
 employeesRouter.get(
+  '/facets',
+  asyncHandler(employeesController.getEmployeeFacets),
+)
+
+employeesRouter.get(
   '/:id',
   validate(employeeIdParamsSchema, 'params'),
   asyncHandler(employeesController.getEmployee),
+)
+
+employeesRouter.patch(
+  '/:id',
+  validate(employeeIdParamsSchema, 'params'),
+  validate(updateEmployeeBodySchema, 'body'),
+  asyncHandler(employeesController.updateEmployee),
 )
