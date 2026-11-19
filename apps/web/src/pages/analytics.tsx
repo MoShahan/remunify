@@ -8,7 +8,7 @@ import {
   YAxis,
 } from 'recharts'
 import { ErrorState } from '@/components/error-state'
-import { MoneyText } from '@/components/money-text'
+import { CurrencyCode, MoneyText } from '@/components/money-text'
 import { PageHeader } from '@/components/page-header'
 import { CardSkeleton, KpiSkeleton } from '@/components/skeletons'
 import {
@@ -122,12 +122,17 @@ export default function AnalyticsPage() {
                         <TableCell className="font-medium">
                           {row.country}
                         </TableCell>
-                        <TableCell>{row.currency}</TableCell>
+                        <TableCell>
+                          <CurrencyCode code={row.currency} />
+                        </TableCell>
                         <TableCell className="tabular-nums">
                           {row.employeeCount.toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          <MoneyText amount={row.totalAmount} />
+                          <MoneyText
+                            amount={row.totalAmount}
+                            currency={row.currency}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
@@ -159,12 +164,17 @@ export default function AnalyticsPage() {
                         <TableCell className="font-medium">
                           {row.department}
                         </TableCell>
-                        <TableCell>{row.currency}</TableCell>
+                        <TableCell>
+                          <CurrencyCode code={row.currency} />
+                        </TableCell>
                         <TableCell className="tabular-nums">
                           {row.employeeCount.toLocaleString()}
                         </TableCell>
                         <TableCell>
-                          <MoneyText amount={row.totalAmount} />
+                          <MoneyText
+                            amount={row.totalAmount}
+                            currency={row.currency}
+                          />
                         </TableCell>
                       </TableRow>
                     ))}
