@@ -1,9 +1,22 @@
 import { Link } from 'react-router-dom'
 import { Download } from 'lucide-react'
+import {
+  Bar,
+  BarChart,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { ErrorState } from '@/components/error-state'
 import { CurrencyCode, MoneyText } from '@/components/money-text'
 import { PageHeader } from '@/components/page-header'
+import { ScrollableTable } from '@/components/scrollable-table'
 import { KpiSkeleton } from '@/components/skeletons'
+import { StaleDataBanner } from '@/components/stale-data-banner'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -22,6 +35,8 @@ import {
 } from '@/components/ui/table'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
 import { useExportActions } from '@/features/export/use-export'
+
+const STATUS_COLORS = ['hsl(262 52% 36%)', 'hsl(270 14% 72%)']
 
 function Kpi({
   label,
@@ -52,6 +67,23 @@ function Kpi({
 export default function DashboardPage() {
   const query = useAnalyticsSummary()
   const { exporting, exportCsv, exportXlsx } = useExportActions()
+
+  const statusChart = query.data
+    ? [
+        { name: 'Active', value: query.data.headcount.active },
+        { name: 'Inactive', value: query.data.headcount.inactive },
+      ]
+    : []
+
+  const currencyBars = query.data
+    ? [...query.data.byCurrency]
+        .sort((a, b) => b.employeeCount - a.employeeCount)
+        .slice(0, 8)
+        .map((row) => ({
+          currency: row.currency,
+          employees: row.employeeCount,
+        }))
+    : []
 
   return (
     <div>
@@ -85,22 +117,31 @@ export default function DashboardPage() {
       />
 
       {query.isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <KpiSkeleton />
+          <KpiSkeleton />
           <KpiSkeleton />
           <KpiSkeleton />
           <KpiSkeleton />
         </div>
       ) : null}
 
-      {query.isError ? (
+      {query.isError && !query.data ? (
         <ErrorState error={query.error} onRetry={() => void query.refetch()} />
+      ) : null}
+
+      {query.isError && query.data ? (
+        <StaleDataBanner
+          error={query.error}
+          onRetry={() => void query.refetch()}
+        />
       ) : null}
 
       {query.data ? (
         <div
           className={`space-y-6 ${query.isFetching ? 'opacity-80 transition-opacity' : ''}`}
         >
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <Kpi label="Total headcount" value={query.data.headcount.total} />
             <Kpi
               label="Active"
@@ -112,6 +153,90 @@ export default function DashboardPage() {
               value={query.data.headcount.inactive}
               hint="Not currently active"
             />
+            <Kpi
+              label="With salary"
+              value={query.data.headcount.withSalary}
+              hint="Has a current salary row"
+            />
+            <Kpi
+              label="Without salary"
+              value={query.data.headcount.withoutSalary}
+              hint="No salary on file"
+            />
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <Card>
+              <CardHeader>
+                <CardTitle>Active vs inactive</CardTitle>
+                <CardDescription>
+                  Headcount by employment status.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={statusChart}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius={48}
+                      outerRadius={72}
+                      paddingAngle={2}
+                    >
+                      {statusChart.map((entry, index) => (
+                        <Cell
+                          key={entry.name}
+                          fill={STATUS_COLORS[index % STATUS_COLORS.length]}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Top currencies</CardTitle>
+                <CardDescription>
+                  Employee count by pay currency (current salaries).
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="h-56">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={currencyBars}
+                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                  >
+                    <XAxis
+                      dataKey="currency"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tickLine={false}
+                      axisLine={false}
+                      width={32}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
+                      contentStyle={{
+                        borderRadius: 8,
+                        border: '1px solid hsl(270 14% 88%)',
+                      }}
+                    />
+                    <Bar
+                      dataKey="employees"
+                      fill="hsl(262 52% 36%)"
+                      radius={[6, 6, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
@@ -123,47 +248,49 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Currency</TableHead>
-                      <TableHead>Employees</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Average</TableHead>
-                      <TableHead>Median</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {query.data.byCurrency.map((row) => (
-                      <TableRow key={row.currency}>
-                        <TableCell className="font-medium">
-                          <CurrencyCode code={row.currency} />
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {row.employeeCount.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <MoneyText
-                            amount={row.totalAmount}
-                            currency={row.currency}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <MoneyText
-                            amount={row.averageAmount}
-                            currency={row.currency}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <MoneyText
-                            amount={row.medianAmount}
-                            currency={row.currency}
-                          />
-                        </TableCell>
+                <ScrollableTable>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Currency</TableHead>
+                        <TableHead>Employees</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Average</TableHead>
+                        <TableHead>Median</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {query.data.byCurrency.map((row) => (
+                        <TableRow key={row.currency}>
+                          <TableCell className="font-medium">
+                            <CurrencyCode code={row.currency} />
+                          </TableCell>
+                          <TableCell className="tabular-nums">
+                            {row.employeeCount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <MoneyText
+                              amount={row.totalAmount}
+                              currency={row.currency}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <MoneyText
+                              amount={row.averageAmount}
+                              currency={row.currency}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <MoneyText
+                              amount={row.medianAmount}
+                              currency={row.currency}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollableTable>
               </CardContent>
             </Card>
 
@@ -209,37 +336,39 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Country</TableHead>
-                      <TableHead>Currency</TableHead>
-                      <TableHead>Employees</TableHead>
-                      <TableHead>Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {query.data.byCountry.map((row) => (
-                      <TableRow key={`${row.country}-${row.currency}`}>
-                        <TableCell className="font-medium">
-                          {row.country}
-                        </TableCell>
-                        <TableCell>
-                          <CurrencyCode code={row.currency} />
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {row.employeeCount.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <MoneyText
-                            amount={row.totalAmount}
-                            currency={row.currency}
-                          />
-                        </TableCell>
+                <ScrollableTable>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Country</TableHead>
+                        <TableHead>Currency</TableHead>
+                        <TableHead>Employees</TableHead>
+                        <TableHead>Total</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {query.data.byCountry.map((row) => (
+                        <TableRow key={`${row.country}-${row.currency}`}>
+                          <TableCell className="font-medium">
+                            {row.country}
+                          </TableCell>
+                          <TableCell>
+                            <CurrencyCode code={row.currency} />
+                          </TableCell>
+                          <TableCell className="tabular-nums">
+                            {row.employeeCount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <MoneyText
+                              amount={row.totalAmount}
+                              currency={row.currency}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollableTable>
               </CardContent>
             </Card>
 
@@ -251,37 +380,39 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Department</TableHead>
-                      <TableHead>Currency</TableHead>
-                      <TableHead>Employees</TableHead>
-                      <TableHead>Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {query.data.byDepartment.map((row) => (
-                      <TableRow key={`${row.department}-${row.currency}`}>
-                        <TableCell className="font-medium">
-                          {row.department}
-                        </TableCell>
-                        <TableCell>
-                          <CurrencyCode code={row.currency} />
-                        </TableCell>
-                        <TableCell className="tabular-nums">
-                          {row.employeeCount.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <MoneyText
-                            amount={row.totalAmount}
-                            currency={row.currency}
-                          />
-                        </TableCell>
+                <ScrollableTable>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Department</TableHead>
+                        <TableHead>Currency</TableHead>
+                        <TableHead>Employees</TableHead>
+                        <TableHead>Total</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {query.data.byDepartment.map((row) => (
+                        <TableRow key={`${row.department}-${row.currency}`}>
+                          <TableCell className="font-medium">
+                            {row.department}
+                          </TableCell>
+                          <TableCell>
+                            <CurrencyCode code={row.currency} />
+                          </TableCell>
+                          <TableCell className="tabular-nums">
+                            {row.employeeCount.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <MoneyText
+                              amount={row.totalAmount}
+                              currency={row.currency}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollableTable>
               </CardContent>
             </Card>
           </div>
