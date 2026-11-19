@@ -28,3 +28,11 @@ export function conflict(message: string) {
 export function badRequest(message: string, details?: unknown) {
   return new AppError(400, 'BAD_REQUEST', message, details)
 }
+
+export function unauthorized(message: string, details?: unknown) {
+  return new AppError(401, 'UNAUTHORIZED', message, details)
+}
+
+export function forbidden(message: string, details?: unknown) {
+  return new AppError(403, 'FORBIDDEN', message, details)
+}
