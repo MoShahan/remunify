@@ -1,29 +1,26 @@
-# Prisma schema - locked product assumptions
+# Prisma schema - locked v1
 
 Source of truth: [`docs/database-design.md`](../../../docs/database-design.md), [`docs/requirements.md`](../../../docs/requirements.md).
 
-**Note:** The checked-in `schema.prisma` may still be the older _provisional_ draft until the next migration lands. Treat this file + docs as the target model.
+## Included
 
-## Target v1 includes
-
-- `Employee` with email + `joinedAt`, plus country/department/designation/status
-- `Salary` **history rows** (many per employee); current = latest `effectiveFrom`
-- Raise = insert new row (keep old); no overlapping periods
+- `User` - single HR login (`email`, `passwordHash`, role `HR`)
+- `Employee` - number, name, email, `joinedAt`, country, department, designation, status
+- `Salary` - **history rows** (many per employee); current = latest `effectiveFrom`
+- Raise = insert new row (keep old); unique `(employeeId, effectiveFrom)`
 - Period = **ANNUAL** only
+- `FxRate` - fixed demo USD conversion rates
 - Money as `Decimal(14, 2)` + `Char(3)` currency
-- `User` for single HR login
-- `FxRate` (or equivalent) for fixed demo USD conversion
-- Indexes for search/filter/analytics/history
 
-## Explicitly not in v1
+## Not in v1
 
-| Topic                                    | Why                             |
-| ---------------------------------------- | ------------------------------- |
-| Salary components (base/bonus/allowance) | Product: upcoming               |
-| Monthly period UI                        | Annual only; monthly upcoming   |
-| Live FX API                              | Fixed demo rates; live upcoming |
-| Import-run tables                        | Export only; import upcoming    |
-| Manager / location fields                | Upcoming                        |
+| Topic              | Why              |
+| ------------------ | ---------------- |
+| Salary components  | Upcoming         |
+| Monthly period     | Upcoming         |
+| Live FX API        | Fixed demo rates |
+| Import-run tables  | Export only      |
+| Manager / location | Upcoming         |
 
 ## Apply migration + seed
 
@@ -33,4 +30,6 @@ npm run db:migrate
 npm run db:seed
 ```
 
-Seed target: deterministic RNG, **10,000** employees across many countries/currencies, salary history depth, FxRate rows, one HR user. Re-run clears and reloads.
+Optional env for seeded HR user: `HR_EMAIL`, `HR_PASSWORD` (defaults `hr@remunify.com` / `HR@123`).
+
+Seed: deterministic RNG (42), **10,000** employees across many countries, salary history depth 1-3, FxRate rows, one HR user. Re-run clears and reloads.

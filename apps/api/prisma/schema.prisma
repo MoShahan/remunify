@@ -1,6 +1,4 @@
-// Remunify schema - currently still the early provisional draft.
-// Locked target model (history, email, joinedAt, User, FxRate): docs/database-design.md
-// Next step: migrate this file to match the locked design.
+// Remunify locked v1 schema - docs/database-design.md
 
 generator client {
   provider = "prisma-client-js"
@@ -11,6 +9,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  HR
+}
+
 enum EmploymentStatus {
   ACTIVE
   INACTIVE
@@ -18,30 +20,41 @@ enum EmploymentStatus {
 
 enum PayPeriod {
   ANNUAL
-  MONTHLY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(HR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model Employee {
   id             String           @id @default(cuid())
   employeeNumber String           @unique
   fullName       String
+  email          String           @unique
+  joinedAt       DateTime         @db.Date
   country        String
   department     String
   designation    String
   status         EmploymentStatus @default(ACTIVE)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  salary         Salary?
+  salaries       Salary[]
 
   @@index([fullName])
+  @@index([email])
   @@index([country, department])
   @@index([status])
 }
 
-/// Target model allows multiple rows per employee (history); this draft is still 1:1 current-only.
+/// Multiple rows per employee. Current = latest effectiveFrom.
 model Salary {
   id            String    @id @default(cuid())
-  employeeId    String    @unique
+  employeeId    String
   employee      Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
   /// Precise money - never float
   amount        Decimal   @db.Decimal(14, 2)
@@ -49,7 +62,18 @@ model Salary {
   currency      String    @db.Char(3)
   period        PayPeriod @default(ANNUAL)
   effectiveFrom DateTime  @db.Date
+  createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  @@unique([employeeId, effectiveFrom])
+  @@index([employeeId, effectiveFrom(sort: Desc)])
   @@index([currency])
+}
+
+/// Fixed demo FX rates for labeled USD company totals (not live market data).
+model FxRate {
+  currency   String   @id @db.Char(3)
+  usdPerUnit Decimal  @db.Decimal(18, 8)
+  asOf       DateTime @db.Date
+  updatedAt  DateTime @updatedAt
 }
