@@ -31,6 +31,7 @@ type UsdTotalRow = {
   rates_as_of: Date | null
 }
 
+/** Format Prisma decimals / raw SQL numbers as fixed 2-decimal strings for the API. */
 function decimalToString(value: Prisma.Decimal | string | null | undefined) {
   if (value === null || value === undefined) {
     return '0.00'
@@ -42,7 +43,7 @@ function decimalToString(value: Prisma.Decimal | string | null | undefined) {
   return value.toFixed(2)
 }
 
-/** Shared current-salary CTE: latest effectiveFrom per employee. */
+/** Shared current-salary CTE: latest effectiveFrom per employee (DISTINCT ON). */
 export const CURRENT_SALARY_CTE = Prisma.sql`
   current_salary AS (
     SELECT DISTINCT ON (s."employeeId")
@@ -65,6 +66,11 @@ export const CURRENT_SALARY_CTE = Prisma.sql`
   )
 `
 
+/**
+ * Org-wide analytics summary from current salaries only.
+ * Runs headcount + currency/country/department aggregates + demo USD total in one transaction
+ * (no Node-side aggregation of employee rows).
+ */
 export async function getAnalyticsSummary() {
   const [
     headcountRows,
@@ -73,6 +79,7 @@ export async function getAnalyticsSummary() {
     byDepartmentRows,
     usdRows,
   ] = await prisma.$transaction([
+    // Employee status counts (independent of salary rows)
     prisma.$queryRaw<HeadcountRow[]>`
         SELECT
           COUNT(*)::bigint AS total,
@@ -80,6 +87,7 @@ export async function getAnalyticsSummary() {
           COUNT(*) FILTER (WHERE status = 'INACTIVE')::bigint AS inactive
         FROM "Employee"
       `,
+    // Totals / avg / median per currency - never cross-sum mixed currencies
     prisma.$queryRaw<CurrencyAggRow[]>`
         WITH ${CURRENT_SALARY_CTE}
         SELECT
@@ -92,6 +100,7 @@ export async function getAnalyticsSummary() {
         GROUP BY currency
         ORDER BY currency
       `,
+    // Country × currency rollups
     prisma.$queryRaw<DimensionAggRow[]>`
         WITH ${CURRENT_SALARY_CTE}
         SELECT
@@ -103,6 +112,7 @@ export async function getAnalyticsSummary() {
         GROUP BY country, currency
         ORDER BY country, currency
       `,
+    // Department × currency rollups
     prisma.$queryRaw<DimensionAggRow[]>`
         WITH ${CURRENT_SALARY_CTE}
         SELECT
@@ -114,6 +124,7 @@ export async function getAnalyticsSummary() {
         GROUP BY department, currency
         ORDER BY department, currency
       `,
+    // Company-wide USD via seeded FxRate (labeled as demo, not live market data)
     prisma.$queryRaw<UsdTotalRow[]>`
         WITH ${CURRENT_SALARY_CTE}
         SELECT
