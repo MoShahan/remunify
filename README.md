@@ -66,6 +66,17 @@ npm run dev
 
 `npm run dev` starts **web** and **api** together (colored logs via `concurrently`).
 
+### UI
+
+| Item    | Detail                                                               |
+| ------- | -------------------------------------------------------------------- |
+| App URL | `http://localhost:5173` (Vite)                                       |
+| Login   | `hr@remunify.com` / `HR@123` (seeded HR user)                        |
+| Env     | `apps/web/.env` → `VITE_API_URL=http://localhost:3001`               |
+| Routes  | `/login`, `/dashboard`, `/employees`, `/employees/:id`, `/analytics` |
+
+Auth token is stored in `localStorage` (`remunify_token`). Protected routes redirect to login. API error messages surface as toasts or field helper text; lists use skeleton loaders.
+
 | Command                | What it does                                          |
 | ---------------------- | ----------------------------------------------------- |
 | `npm run dev`          | Frontend + backend                                    |
