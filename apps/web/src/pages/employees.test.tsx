@@ -69,7 +69,7 @@ describe('EmployeesPage', () => {
 
     expect(await screen.findByText('Aisha Shah')).toBeInTheDocument()
     expect(screen.getByText('E00001')).toBeInTheDocument()
-    expect(screen.getByText('100000.00')).toBeInTheDocument()
+    expect(screen.getByText('1,00,000.00')).toBeInTheDocument()
   })
 
   it('shows ErrorState when the list request fails', async () => {
