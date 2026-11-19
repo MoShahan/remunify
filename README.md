@@ -91,7 +91,7 @@ Never commit real `.env` files.
 
 ### Database
 
-Postgres + Prisma live under `apps/api`. Product model is locked (salary history, multi-currency + demo FX, HR login, CSV/Excel export) - see `docs/requirements.md` and `apps/api/prisma/ASSUMPTIONS.md`. The checked-in schema may still be catching up to that target via the next migration.
+Postgres + Prisma live under `apps/api`. Locked v1 model: salary history, email/`joinedAt`, `User` (HR), `FxRate` demo table - see `docs/requirements.md` and `apps/api/prisma/ASSUMPTIONS.md`.
 
 ```bash
 cp apps/api/.env.example apps/api/.env
@@ -101,14 +101,14 @@ npm run db:migrate
 npm run db:seed
 ```
 
-| Command                  | What it does                                                           |
-| ------------------------ | ---------------------------------------------------------------------- |
-| `npm run db:generate`    | Generate Prisma Client                                                 |
-| `npm run db:migrate`     | Apply migrations (`prisma migrate deploy`)                             |
-| `npm run db:migrate:dev` | Dev migrations (`prisma migrate dev`)                                  |
-| `npm run db:seed`        | Seed **10,000** synthetic employees + current salaries (deterministic) |
+| Command                  | What it does                                                  |
+| ------------------------ | ------------------------------------------------------------- |
+| `npm run db:generate`    | Generate Prisma Client                                        |
+| `npm run db:migrate`     | Apply migrations (`prisma migrate deploy`)                    |
+| `npm run db:migrate:dev` | Dev migrations (`prisma migrate dev`)                         |
+| `npm run db:seed`        | Seed **10,000** employees + salary history + FxRate + HR user |
 
-Seed implementation: `apps/api/prisma/seed.ts` (provisional fields; re-run clears and reloads).
+Seed: `apps/api/prisma/seed.ts` (deterministic; re-run clears and reloads). Optional `HR_EMAIL` / `HR_PASSWORD` in `apps/api/.env`.
 
 ### Git hooks
 
@@ -145,3 +145,4 @@ Planned after v1 (not built yet):
 - Monthly salary display (v1 is annual only)
 - Salary component breakdown (base / allowance / bonus)
 - Manager, location, and richer org fields
+- Multi-tenant support (multiple companies on one deployment; v1 is single-company)
