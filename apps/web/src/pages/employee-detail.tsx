@@ -143,7 +143,7 @@ export default function EmployeeDetailPage() {
             <CardHeader>
               <CardTitle>Salary history</CardTitle>
               <CardDescription>
-                Newest first. Raises keep prior rows and insert a new current.
+                Past and current pay changes, newest first.
               </CardDescription>
             </CardHeader>
             <CardContent>
