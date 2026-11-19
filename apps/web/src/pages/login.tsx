@@ -87,7 +87,7 @@ export default function LoginPage() {
             Sign in
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            HR Manager access only. No registration.
+            Sign in with your ACME HR account.
           </p>
 
           <div className="mt-6 space-y-4">
