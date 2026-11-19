@@ -2,6 +2,7 @@ import { lazy, Suspense, type ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '@/components/app-shell'
 import { PageSkeleton } from '@/components/skeletons'
+import { ScrollToTop } from '@/components/scroll-to-top'
 import { AuthProvider } from '@/features/auth/auth-context'
 import { GuestOnly, RequireAuth } from '@/features/auth/require-auth'
 
@@ -19,6 +20,7 @@ function LazyPage({ children }: { children: ReactNode }) {
 export function AppRouter() {
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         <Route element={<GuestOnly />}>
           <Route
