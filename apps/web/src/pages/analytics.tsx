@@ -44,6 +44,14 @@ import { formatMoneyAmount } from '@/lib/format-money'
 
 const STATUS_COLORS = ['hsl(262 52% 36%)', 'hsl(270 14% 72%)']
 
+/** Compact Y-axis ticks so large salary amounts stay readable in the chart gutter. */
+function formatAxisAmount(value: number) {
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value)
+}
+
 export default function AnalyticsPage() {
   const query = useAnalyticsSummary()
   const currencies = query.data?.byCurrency.map((row) => row.currency) ?? []
@@ -132,7 +140,7 @@ export default function AnalyticsPage() {
                       currency: row.currency,
                       employees: row.employeeCount,
                     }))}
-                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                    margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -144,7 +152,7 @@ export default function AnalyticsPage() {
                       allowDecimals={false}
                       tickLine={false}
                       axisLine={false}
-                      width={40}
+                      width={48}
                     />
                     <Tooltip
                       cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
@@ -252,14 +260,12 @@ export default function AnalyticsPage() {
                       type="number"
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(value: number) =>
-                        formatMoneyAmount(String(value), 'USD')
-                      }
+                      tickFormatter={formatAxisAmount}
                     />
                     <YAxis
                       type="category"
                       dataKey="country"
-                      width={112}
+                      width={120}
                       tickLine={false}
                       axisLine={false}
                       interval={0}
@@ -315,7 +321,7 @@ export default function AnalyticsPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={avgByDepartment}
-                    margin={{ top: 8, right: 8, left: 0, bottom: 40 }}
+                    margin={{ top: 8, right: 16, left: 8, bottom: 40 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" vertical={false} />
                     <XAxis
@@ -327,19 +333,24 @@ export default function AnalyticsPage() {
                       textAnchor="end"
                       height={60}
                     />
-                    <YAxis tickLine={false} axisLine={false} width={56} />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      width={64}
+                      tickFormatter={formatAxisAmount}
+                      domain={[0, 'auto']}
+                    />
                     <Tooltip
                       cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
                       formatter={(value) =>
                         typeof value === 'number'
-                          ? value.toLocaleString(undefined, {
-                              maximumFractionDigits: 2,
-                            })
+                          ? `${formatMoneyAmount(String(value), currency)} ${currency ?? ''}`
                           : String(value ?? '')
                       }
                     />
                     <Bar
                       dataKey="average"
+                      name="Average"
                       fill="hsl(262 52% 36%)"
                       radius={[6, 6, 0, 0]}
                     />

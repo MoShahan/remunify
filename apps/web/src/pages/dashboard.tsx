@@ -239,7 +239,7 @@ export default function DashboardPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={currencyBars}
-                    margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                    margin={{ top: 8, right: 8, left: 8, bottom: 0 }}
                   >
                     <XAxis
                       dataKey="currency"
@@ -250,7 +250,7 @@ export default function DashboardPage() {
                       allowDecimals={false}
                       tickLine={false}
                       axisLine={false}
-                      width={32}
+                      width={48}
                     />
                     <Tooltip
                       cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
