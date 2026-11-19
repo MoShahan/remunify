@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { AppProviders } from '@/app/providers'
 import { AuthProvider } from '@/features/auth/auth-context'
 import { RequireAuth } from '@/features/auth/require-auth'
-import LoginPage from '@/pages/login-page'
+import LoginPage from '@/pages/login'
 
 describe('RequireAuth', () => {
   beforeEach(() => {

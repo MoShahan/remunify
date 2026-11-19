@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '@/lib/api/errors'
-import EmployeesPage from '@/pages/employees-page'
+import EmployeesPage from '@/pages/employees'
 
 const listEmployees = vi.fn()
 

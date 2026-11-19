@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppProviders } from '@/app/providers'
 import { AuthProvider } from '@/features/auth/auth-context'
 import { GuestOnly } from '@/features/auth/require-auth'
-import LoginPage from '@/pages/login-page'
+import LoginPage from '@/pages/login'
 import { ApiError } from '@/lib/api/errors'
 
 const loginRequest = vi.hoisted(() => vi.fn())
