@@ -18,19 +18,19 @@ Express API (apps/api)
 
 ## Repository layout
 
-| Path                | Responsibility                                                        |
-| ------------------- | --------------------------------------------------------------------- |
-| `apps/web`          | Remunify UI (Vite + React + TypeScript)                               |
-| `apps/api`          | HTTP API, validation, auth, business logic, Prisma, seed              |
-| `docs/`             | Requirements, architecture, database, decisions, AI/performance notes |
-| Root `package.json` | npm workspaces; `npm run dev` runs web + api (colored logs)           |
+| Path                | Responsibility                                                                                                                                            |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`          | Remunify UI (Vite + React + TypeScript)                                                                                                                   |
+| `apps/api`          | HTTP API, validation, auth, business logic, Prisma, seed                                                                                                  |
+| `docs/`             | Requirements, architecture, database, decisions, [`ai-workflow.md`](./ai-workflow.md), [`performance-considerations.md`](./performance-considerations.md) |
+| Root `package.json` | npm workspaces; `npm run dev` runs web + api (colored logs)                                                                                               |
 
 ## Request / data flow
 
 ```text
 Browser
   |  Login -> store bearer token
-  |  TanStack Query (planned) + Authorization header
+  |  TanStack Query + Authorization header
   v
 HTTP REST (JSON)
   |  Auth middleware (except login/health)
@@ -65,7 +65,7 @@ PostgreSQL
 | Area        | Screens / jobs                                                     |
 | ----------- | ------------------------------------------------------------------ |
 | `auth`      | Login (no registration)                                            |
-| `dashboard` | Headcount; per-currency summaries; labeled USD company total       |
+| `dashboard` | Headcount; per-currency + country/department; labeled USD total    |
 | `employees` | Directory (current salary column) + detail (history timeline)      |
 | `salaries`  | Edit current annual pay on detail (triggers history insert)        |
 | `analytics` | Breakdown views with currency + cohort; USD rollup labeled demo FX |
