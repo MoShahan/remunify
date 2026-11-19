@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const payPeriodSchema = z.enum(['ANNUAL', 'MONTHLY'])
+export const payPeriodSchema = z.enum(['ANNUAL'])
 
 export const employeeIdParamsSchema = z.object({
   employeeId: z.string().min(1),

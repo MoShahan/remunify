@@ -26,30 +26,35 @@ vi.mock('../../db/prisma.js', () => ({
 import { AppError } from '../../lib/errors.js'
 import { getEmployeeById, listEmployees } from './employees.service.js'
 
+const salaryRow = {
+  id: 'sal_00001',
+  amount: { toFixed: () => '600000.00' },
+  currency: 'INR',
+  period: 'ANNUAL',
+  effectiveFrom: new Date('2024-01-01T00:00:00.000Z'),
+  createdAt: new Date('2024-01-01T00:00:00.000Z'),
+  updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+}
+
 describe('employees.service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it('lists employees with pagination metadata', async () => {
+  it('lists employees with pagination metadata and current salary', async () => {
     const row = {
       id: 'emp_00001',
       employeeNumber: 'E00001',
       fullName: 'Aisha Shah',
+      email: 'e00001@employees.remunify.local',
+      joinedAt: new Date('2022-01-01T00:00:00.000Z'),
       country: 'India',
       department: 'Engineering',
       designation: 'Manager',
       status: 'ACTIVE',
       createdAt: new Date('2024-01-01T00:00:00.000Z'),
       updatedAt: new Date('2024-01-02T00:00:00.000Z'),
-      salary: {
-        id: 'sal_00001',
-        amount: { toFixed: () => '600000.00' },
-        currency: 'INR',
-        period: 'ANNUAL',
-        effectiveFrom: new Date('2024-01-01T00:00:00.000Z'),
-        updatedAt: new Date('2024-01-02T00:00:00.000Z'),
-      },
+      salaries: [salaryRow],
     }
 
     employeeCountMock.mockResolvedValue(1)
@@ -72,7 +77,38 @@ describe('employees.service', () => {
       totalPages: 1,
     })
     expect(result.data[0]?.fullName).toBe('Aisha Shah')
+    expect(result.data[0]?.email).toBe('e00001@employees.remunify.local')
     expect(result.data[0]?.salary?.amount).toBe('600000.00')
+  })
+
+  it('returns salary history on employee detail', async () => {
+    employeeFindUniqueMock.mockResolvedValue({
+      id: 'emp_00001',
+      employeeNumber: 'E00001',
+      fullName: 'Aisha Shah',
+      email: 'e00001@employees.remunify.local',
+      joinedAt: new Date('2022-01-01T00:00:00.000Z'),
+      country: 'India',
+      department: 'Engineering',
+      designation: 'Manager',
+      status: 'ACTIVE',
+      createdAt: new Date('2024-01-01T00:00:00.000Z'),
+      updatedAt: new Date('2024-01-02T00:00:00.000Z'),
+      salaries: [
+        {
+          ...salaryRow,
+          id: 'sal_00002',
+          amount: { toFixed: () => '700000.00' },
+          effectiveFrom: new Date('2025-01-01T00:00:00.000Z'),
+        },
+        salaryRow,
+      ],
+    })
+
+    const result = await getEmployeeById('emp_00001')
+
+    expect(result.salary?.amount).toBe('700000.00')
+    expect(result.salaryHistory).toHaveLength(2)
   })
 
   it('throws when employee is missing', async () => {

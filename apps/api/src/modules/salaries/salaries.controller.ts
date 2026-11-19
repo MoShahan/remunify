@@ -8,6 +8,12 @@ export async function getSalary(req: Request, res: Response) {
   res.json({ data: salary })
 }
 
+export async function listSalaryHistory(req: Request, res: Response) {
+  const { employeeId } = req.params as unknown as EmployeeIdParams
+  const history = await salariesService.listSalaryHistoryForEmployee(employeeId)
+  res.json({ data: history })
+}
+
 export async function createSalary(req: Request, res: Response) {
   const { employeeId } = req.params as unknown as EmployeeIdParams
   const body = req.body as SalaryBody

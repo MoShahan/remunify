@@ -1,5 +1,5 @@
 import { prisma } from '../../db/prisma.js'
-import { conflict, notFound } from '../../lib/errors.js'
+import { badRequest, conflict, notFound } from '../../lib/errors.js'
 import type { SalaryBody } from './salaries.schemas.js'
 
 function serializeSalary(salary: {
@@ -9,6 +9,7 @@ function serializeSalary(salary: {
   currency: string
   period: string
   effectiveFrom: Date
+  createdAt: Date
   updatedAt: Date
 }) {
   return {
@@ -21,6 +22,7 @@ function serializeSalary(salary: {
     currency: salary.currency,
     period: salary.period,
     effectiveFrom: salary.effectiveFrom.toISOString().slice(0, 10),
+    createdAt: salary.createdAt.toISOString(),
     updatedAt: salary.updatedAt.toISOString(),
   }
 }
@@ -36,12 +38,17 @@ async function assertEmployeeExists(employeeId: string) {
   }
 }
 
+async function findCurrentSalary(employeeId: string) {
+  return prisma.salary.findFirst({
+    where: { employeeId },
+    orderBy: { effectiveFrom: 'desc' },
+  })
+}
+
 export async function getSalaryForEmployee(employeeId: string) {
   await assertEmployeeExists(employeeId)
 
-  const salary = await prisma.salary.findUnique({
-    where: { employeeId },
-  })
+  const salary = await findCurrentSalary(employeeId)
 
   if (!salary) {
     throw notFound(`Salary not found for employee: ${employeeId}`)
@@ -50,16 +57,24 @@ export async function getSalaryForEmployee(employeeId: string) {
   return serializeSalary(salary)
 }
 
+export async function listSalaryHistoryForEmployee(employeeId: string) {
+  await assertEmployeeExists(employeeId)
+
+  const rows = await prisma.salary.findMany({
+    where: { employeeId },
+    orderBy: { effectiveFrom: 'desc' },
+  })
+
+  return rows.map(serializeSalary)
+}
+
 export async function createSalaryForEmployee(
   employeeId: string,
   body: SalaryBody,
 ) {
   await assertEmployeeExists(employeeId)
 
-  const existing = await prisma.salary.findUnique({
-    where: { employeeId },
-    select: { id: true },
-  })
+  const existing = await findCurrentSalary(employeeId)
 
   if (existing) {
     throw conflict(`Salary already exists for employee: ${employeeId}`)
@@ -78,24 +93,31 @@ export async function createSalaryForEmployee(
   return serializeSalary(salary)
 }
 
+/** Raise: keep prior rows; insert a new current salary. */
 export async function updateSalaryForEmployee(
   employeeId: string,
   body: SalaryBody,
 ) {
   await assertEmployeeExists(employeeId)
 
-  const existing = await prisma.salary.findUnique({
-    where: { employeeId },
-    select: { id: true },
-  })
+  const current = await findCurrentSalary(employeeId)
 
-  if (!existing) {
+  if (!current) {
     throw notFound(`Salary not found for employee: ${employeeId}`)
   }
 
-  const salary = await prisma.salary.update({
-    where: { employeeId },
+  if (body.effectiveFrom <= current.effectiveFrom) {
+    throw badRequest(
+      'effectiveFrom must be after the current salary effective date',
+      {
+        currentEffectiveFrom: current.effectiveFrom.toISOString().slice(0, 10),
+      },
+    )
+  }
+
+  const salary = await prisma.salary.create({
     data: {
+      employeeId,
       amount: body.amount,
       currency: body.currency,
       period: body.period,

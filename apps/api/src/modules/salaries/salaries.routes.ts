@@ -12,6 +12,12 @@ salariesRouter.get(
   asyncHandler(salariesController.getSalary),
 )
 
+salariesRouter.get(
+  '/history',
+  validate(employeeIdParamsSchema, 'params'),
+  asyncHandler(salariesController.listSalaryHistory),
+)
+
 salariesRouter.post(
   '/',
   validate(employeeIdParamsSchema, 'params'),

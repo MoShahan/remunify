@@ -3,25 +3,40 @@ import { prisma } from '../../db/prisma.js'
 import { notFound } from '../../lib/errors.js'
 import type { ListEmployeesQuery } from './employees.schemas.js'
 
+const salaryFields = {
+  id: true,
+  amount: true,
+  currency: true,
+  period: true,
+  effectiveFrom: true,
+  createdAt: true,
+  updatedAt: true,
+} satisfies Prisma.SalarySelect
+
 const employeeListSelect = {
   id: true,
   employeeNumber: true,
   fullName: true,
+  email: true,
+  joinedAt: true,
   country: true,
   department: true,
   designation: true,
   status: true,
   createdAt: true,
   updatedAt: true,
-  salary: {
-    select: {
-      id: true,
-      amount: true,
-      currency: true,
-      period: true,
-      effectiveFrom: true,
-      updatedAt: true,
-    },
+  salaries: {
+    orderBy: { effectiveFrom: 'desc' },
+    take: 1,
+    select: salaryFields,
+  },
+} satisfies Prisma.EmployeeSelect
+
+const employeeDetailSelect = {
+  ...employeeListSelect,
+  salaries: {
+    orderBy: { effectiveFrom: 'desc' },
+    select: salaryFields,
   },
 } satisfies Prisma.EmployeeSelect
 
@@ -32,6 +47,7 @@ function serializeSalary(
     currency: string
     period: string
     effectiveFrom: Date
+    createdAt: Date
     updatedAt: Date
   } | null,
 ) {
@@ -48,24 +64,41 @@ function serializeSalary(
     currency: salary.currency,
     period: salary.period,
     effectiveFrom: salary.effectiveFrom.toISOString().slice(0, 10),
+    createdAt: salary.createdAt.toISOString(),
     updatedAt: salary.updatedAt.toISOString(),
   }
 }
 
-function serializeEmployee(
+function serializeEmployeeListItem(
   employee: Prisma.EmployeeGetPayload<{ select: typeof employeeListSelect }>,
 ) {
+  const current = employee.salaries[0] ?? null
   return {
     id: employee.id,
     employeeNumber: employee.employeeNumber,
     fullName: employee.fullName,
+    email: employee.email,
+    joinedAt: employee.joinedAt.toISOString().slice(0, 10),
     country: employee.country,
     department: employee.department,
     designation: employee.designation,
     status: employee.status,
     createdAt: employee.createdAt.toISOString(),
     updatedAt: employee.updatedAt.toISOString(),
-    salary: serializeSalary(employee.salary),
+    salary: serializeSalary(current),
+  }
+}
+
+function serializeEmployeeDetail(
+  employee: Prisma.EmployeeGetPayload<{ select: typeof employeeDetailSelect }>,
+) {
+  const history = employee.salaries.map((row) => serializeSalary(row)!)
+  return {
+    ...serializeEmployeeListItem({
+      ...employee,
+      salaries: employee.salaries.slice(0, 1),
+    }),
+    salaryHistory: history,
   }
 }
 
@@ -82,6 +115,12 @@ export async function listEmployees(query: ListEmployeesQuery) {
       },
       {
         employeeNumber: {
+          contains: query.search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        email: {
           contains: query.search,
           mode: 'insensitive',
         },
@@ -116,7 +155,7 @@ export async function listEmployees(query: ListEmployeesQuery) {
   ])
 
   return {
-    data: rows.map(serializeEmployee),
+    data: rows.map(serializeEmployeeListItem),
     pagination: {
       page: query.page,
       pageSize: query.pageSize,
@@ -129,12 +168,12 @@ export async function listEmployees(query: ListEmployeesQuery) {
 export async function getEmployeeById(id: string) {
   const employee = await prisma.employee.findUnique({
     where: { id },
-    select: employeeListSelect,
+    select: employeeDetailSelect,
   })
 
   if (!employee) {
     throw notFound(`Employee not found: ${id}`)
   }
 
-  return serializeEmployee(employee)
+  return serializeEmployeeDetail(employee)
 }
