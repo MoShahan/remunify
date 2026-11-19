@@ -34,6 +34,12 @@ type UsdTotalRow = {
   rates_as_of: Date | null
 }
 
+type CountryUsdAvgRow = {
+  country: string
+  employee_count: bigint
+  average_amount_usd: Prisma.Decimal | string | null
+}
+
 /** Format Prisma decimals / raw SQL numbers as fixed 2-decimal strings for the API. */
 function decimalToString(value: Prisma.Decimal | string | null | undefined) {
   if (value === null || value === undefined) {
@@ -80,6 +86,7 @@ export async function getAnalyticsSummary() {
     byCurrencyRows,
     byCountryRows,
     byDepartmentRows,
+    byCountryUsdRows,
     usdRows,
   ] = await prisma.$transaction([
     // Employee status + salary coverage counts
@@ -139,6 +146,18 @@ export async function getAnalyticsSummary() {
         GROUP BY department, currency
         ORDER BY department, currency
       `,
+    // One comparable average per country via demo FX → USD
+    prisma.$queryRaw<CountryUsdAvgRow[]>`
+        WITH ${CURRENT_SALARY_CTE}
+        SELECT
+          cs.country,
+          COUNT(*)::bigint AS employee_count,
+          AVG(cs.amount * fx."usdPerUnit") AS average_amount_usd
+        FROM current_salary cs
+        LEFT JOIN "FxRate" fx ON fx.currency = cs.currency
+        GROUP BY cs.country
+        ORDER BY average_amount_usd DESC NULLS LAST, cs.country
+      `,
     // Company-wide USD via seeded FxRate (labeled as demo, not live market data)
     prisma.$queryRaw<UsdTotalRow[]>`
         WITH ${CURRENT_SALARY_CTE}
@@ -188,6 +207,11 @@ export async function getAnalyticsSummary() {
       employeeCount: Number(row.employee_count),
       totalAmount: decimalToString(row.total_amount),
       averageAmount: decimalToString(row.average_amount),
+    })),
+    averageByCountryUsd: byCountryUsdRows.map((row) => ({
+      country: row.country,
+      employeeCount: Number(row.employee_count),
+      averageAmountUsd: decimalToString(row.average_amount_usd),
     })),
     companyWideUsd: {
       totalAmountUsd: decimalToString(usd?.total_amount_usd),

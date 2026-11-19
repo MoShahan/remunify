@@ -40,6 +40,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
+import { formatMoneyAmount } from '@/lib/format-money'
 
 const STATUS_COLORS = ['hsl(262 52% 36%)', 'hsl(270 14% 72%)']
 
@@ -58,15 +59,12 @@ export default function AnalyticsPage() {
 
   const currency = selectedCurrency ?? currencies[0]
 
-  const avgByCountry =
-    query.data && currency
-      ? query.data.byCountry
-          .filter((row) => row.currency === currency)
-          .map((row) => ({
-            country: row.country,
-            average: Number(row.averageAmount),
-          }))
-      : []
+  const avgByCountryUsd =
+    query.data?.averageByCountryUsd.map((row) => ({
+      country: row.country,
+      averageUsd: Number(row.averageAmountUsd),
+      employees: row.employeeCount,
+    })) ?? []
 
   const avgByDepartment =
     query.data && currency
@@ -85,6 +83,7 @@ export default function AnalyticsPage() {
       ]
     : []
 
+  const countryChartHeight = Math.max(320, avgByCountryUsd.length * 28)
   return (
     <div>
       <PageHeader
@@ -226,11 +225,72 @@ export default function AnalyticsPage() {
           </div>
 
           <Card>
+            <CardHeader>
+              <CardTitle>Average salary by country</CardTitle>
+              <CardDescription>
+                Every country with a current salary, converted to USD with demo
+                FX so averages stay comparable.
+                {query.data.companyWideUsd.ratesAsOf
+                  ? ` Rates as of ${query.data.companyWideUsd.ratesAsOf}.`
+                  : null}
+              </CardDescription>
+            </CardHeader>
+            <CardContent style={{ height: countryChartHeight }}>
+              {avgByCountryUsd.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No country averages available.
+                </p>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    layout="vertical"
+                    data={avgByCountryUsd}
+                    margin={{ top: 8, right: 24, left: 8, bottom: 8 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis
+                      type="number"
+                      tickLine={false}
+                      axisLine={false}
+                      tickFormatter={(value: number) =>
+                        formatMoneyAmount(String(value), 'USD')
+                      }
+                    />
+                    <YAxis
+                      type="category"
+                      dataKey="country"
+                      width={112}
+                      tickLine={false}
+                      axisLine={false}
+                      interval={0}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
+                      formatter={(value) =>
+                        typeof value === 'number'
+                          ? `$${formatMoneyAmount(String(value), 'USD')}`
+                          : String(value ?? '')
+                      }
+                      labelFormatter={(label) => String(label)}
+                    />
+                    <Bar
+                      dataKey="averageUsd"
+                      name="Avg USD"
+                      fill="hsl(271 81% 56%)"
+                      radius={[0, 6, 6, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <CardTitle>Average salary by country</CardTitle>
+                <CardTitle>Average salary by department</CardTitle>
                 <CardDescription>
-                  Averages for one selected currency only - never mixed FX.
+                  Native-currency averages for one selected currency only.
                 </CardDescription>
               </div>
               <Select value={currency} onValueChange={setSelectedCurrency}>
@@ -245,56 +305,6 @@ export default function AnalyticsPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </CardHeader>
-            <CardContent className="h-72">
-              {avgByCountry.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No country rows for {currency ?? 'this currency'}.
-                </p>
-              ) : (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={avgByCountry}
-                    margin={{ top: 8, right: 8, left: 0, bottom: 40 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis
-                      dataKey="country"
-                      tickLine={false}
-                      axisLine={false}
-                      interval={0}
-                      angle={-25}
-                      textAnchor="end"
-                      height={60}
-                    />
-                    <YAxis tickLine={false} axisLine={false} width={56} />
-                    <Tooltip
-                      cursor={{ fill: 'hsl(270 45% 95% / 0.7)' }}
-                      formatter={(value) =>
-                        typeof value === 'number'
-                          ? value.toLocaleString(undefined, {
-                              maximumFractionDigits: 2,
-                            })
-                          : String(value ?? '')
-                      }
-                    />
-                    <Bar
-                      dataKey="average"
-                      fill="hsl(271 81% 56%)"
-                      radius={[6, 6, 0, 0]}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Average salary by department</CardTitle>
-              <CardDescription>
-                Same currency filter as the country chart ({currency ?? '-'}).
-              </CardDescription>
             </CardHeader>
             <CardContent className="h-72">
               {avgByDepartment.length === 0 ? (

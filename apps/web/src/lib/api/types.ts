@@ -129,6 +129,12 @@ export type AnalyticsSummary = {
     totalAmount: string
     averageAmount: string
   }>
+  /** Comparable country averages via demo FX → USD (one bar per country). */
+  averageByCountryUsd: Array<{
+    country: string
+    employeeCount: number
+    averageAmountUsd: string
+  }>
   companyWideUsd: {
     totalAmountUsd: string
     employeeCount: number

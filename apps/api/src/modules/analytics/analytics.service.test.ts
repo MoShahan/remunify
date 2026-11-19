@@ -65,6 +65,18 @@ describe('analytics.service', () => {
       ],
       [
         {
+          country: 'India',
+          employee_count: 5n,
+          average_amount_usd: '24.00',
+        },
+        {
+          country: 'United States',
+          employee_count: 5n,
+          average_amount_usd: '100.00',
+        },
+      ],
+      [
+        {
           total_amount_usd: '615.00',
           employee_count: 10n,
           rates_as_of: new Date('2026-01-01T00:00:00.000Z'),
@@ -89,5 +101,7 @@ describe('analytics.service', () => {
     expect(result.byCountry[0]?.averageAmount).toBe('200.00')
     expect(result.byDepartment[0]?.department).toBe('Engineering')
     expect(result.byDepartment[0]?.averageAmount).toBe('100.00')
+    expect(result.averageByCountryUsd).toHaveLength(2)
+    expect(result.averageByCountryUsd[0]?.averageAmountUsd).toBe('24.00')
   })
 })
