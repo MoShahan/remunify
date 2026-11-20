@@ -62,14 +62,14 @@ PostgreSQL
 
 ## Frontend feature areas
 
-| Area        | Screens / jobs                                                     |
-| ----------- | ------------------------------------------------------------------ |
-| `auth`      | Login (no registration)                                            |
-| `dashboard` | Headcount; per-currency + country/department; labeled USD total    |
-| `employees` | Directory (current salary column) + detail (history timeline)      |
-| `salaries`  | Edit current annual pay on detail (triggers history insert)        |
-| `analytics` | Breakdown views with currency + cohort; USD rollup labeled demo FX |
-| `export`    | Export actions (CSV / Excel)                                       |
+| Area        | Screens / jobs                                                                |
+| ----------- | ----------------------------------------------------------------------------- |
+| `auth`      | Login (no registration)                                                       |
+| `dashboard` | Headcount KPIs; status + salary coverage; table previews; labeled USD; export |
+| `employees` | Directory (current salary column) + detail (history timeline)                 |
+| `salaries`  | Edit current annual pay on detail (triggers history insert)                   |
+| `analytics` | Currency/avg/median charts; top cohorts; USD rollup; links to `/tables`       |
+| `export`    | Export actions (CSV / Excel)                                                  |
 
 UI stack: Tailwind + shadcn/ui; modern minimal chrome.
 
