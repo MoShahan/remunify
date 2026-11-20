@@ -18,6 +18,14 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -35,10 +43,17 @@ import {
   type EmploymentStatus,
 } from '@/lib/api'
 
+function statusLabel(status: EmploymentStatus): string {
+  return status === 'ACTIVE' ? 'Active' : 'Inactive'
+}
+
 export default function EmployeeDetailPage() {
   const { id = '' } = useParams()
   const queryClient = useQueryClient()
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [salaryDialogOpen, setSalaryDialogOpen] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState<EmploymentStatus | null>(
+    null,
+  )
 
   const query = useQuery({
     queryKey: employeeKeys.detail(id),
@@ -53,6 +68,7 @@ export default function EmployeeDetailPage() {
   const statusMutation = useMutation({
     mutationFn: (status: EmploymentStatus) => updateEmployeeStatus(id, status),
     onSuccess: async (res) => {
+      setPendingStatus(null)
       queryClient.setQueryData(employeeKeys.detail(id), res.data)
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: employeeKeys.lists() }),
@@ -73,6 +89,17 @@ export default function EmployeeDetailPage() {
 
   const employee = query.data
   const mode = employee?.salary ? 'raise' : 'create'
+  const confirmOpen = pendingStatus !== null
+
+  const requestStatusChange = (next: EmploymentStatus) => {
+    if (!employee || next === employee.status) return
+    setPendingStatus(next)
+  }
+
+  const confirmStatusChange = () => {
+    if (!pendingStatus) return
+    statusMutation.mutate(pendingStatus)
+  }
 
   return (
     <div>
@@ -112,7 +139,7 @@ export default function EmployeeDetailPage() {
                 <Select
                   value={employee.status}
                   onValueChange={(value) =>
-                    statusMutation.mutate(value as EmploymentStatus)
+                    requestStatusChange(value as EmploymentStatus)
                   }
                   disabled={statusMutation.isPending}
                 >
@@ -167,7 +194,7 @@ export default function EmployeeDetailPage() {
                 <Button
                   type="button"
                   size="sm"
-                  onClick={() => setDialogOpen(true)}
+                  onClick={() => setSalaryDialogOpen(true)}
                 >
                   {mode === 'create' ? 'Set salary' : 'Record raise'}
                 </Button>
@@ -239,8 +266,8 @@ export default function EmployeeDetailPage() {
           </Card>
 
           <SalaryFormDialog
-            open={dialogOpen}
-            onOpenChange={setDialogOpen}
+            open={salaryDialogOpen}
+            onOpenChange={setSalaryDialogOpen}
             employeeId={employee.id}
             mode={mode}
             currentSalary={employee.salary}
@@ -256,6 +283,43 @@ export default function EmployeeDetailPage() {
               })
             }}
           />
+
+          <Dialog
+            open={confirmOpen}
+            onOpenChange={(open) => {
+              if (!open && !statusMutation.isPending) setPendingStatus(null)
+            }}
+          >
+            <DialogContent className="max-w-md">
+              <DialogHeader>
+                <DialogTitle>Change employment status?</DialogTitle>
+                <DialogDescription>
+                  Mark {employee.fullName} as{' '}
+                  {pendingStatus
+                    ? statusLabel(pendingStatus).toLowerCase()
+                    : ''}
+                  ? This updates their directory and analytics status.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={statusMutation.isPending}
+                  onClick={() => setPendingStatus(null)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  disabled={statusMutation.isPending}
+                  onClick={confirmStatusChange}
+                >
+                  {statusMutation.isPending ? 'Updating…' : 'Confirm'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </>
       ) : null}
     </div>
