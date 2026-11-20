@@ -13,7 +13,7 @@ description: >-
 2. `npm run typecheck`
 3. `npm run format:check` (or `format` then re-check)
 4. Run relevant tests once suites exist (`test:web` / `test:api`)
-5. **Coverage snapshot:** if the change touched app source under test or `*.test.*` files, run `npm run test:coverage` (or `test:coverage:web` / `test:coverage:api` for the affected workspace) and rewrite in `docs/testing.md`: the date, package summary table, **and the CLI-style directory trees** under web/api (directory rollup rows + indented filenames in a fenced code block; source: CLI text table, `apps/<pkg>/coverage/coverage-summary.json`, or `node .local/gen-coverage-md.mjs`). Treat an outdated or missing snapshot like skipped tests for submission hygiene. Do **not** commit generated `coverage/` folders.
+5. **Coverage snapshot:** if the change touched app source under test or `*.test.*` files, run `npm run test:coverage` (or `test:coverage:web` / `test:coverage:api` for the affected workspace) and rewrite the Coverage snapshot table + date in `docs/testing.md` before claiming done. Treat an outdated or missing snapshot like skipped tests for submission hygiene. Do **not** commit generated `coverage/` folders.
 6. Do not claim green builds/tests unless you actually ran them
 
 ## Pre-commit
