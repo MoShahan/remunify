@@ -54,6 +54,15 @@ function renderPage() {
   )
 }
 
+async function chooseInactive() {
+  const user = userEvent.setup()
+  renderPage()
+  expect(await screen.findByText('Aisha Shah')).toBeInTheDocument()
+  await user.click(screen.getByLabelText('Employment status'))
+  await user.click(await screen.findByRole('option', { name: 'Inactive' }))
+  return user
+}
+
 describe('EmployeeDetailPage', () => {
   beforeEach(() => {
     getEmployee.mockReset()
@@ -61,19 +70,39 @@ describe('EmployeeDetailPage', () => {
     getEmployee.mockResolvedValue({ data: employee })
   })
 
-  it('patches status when the control changes', async () => {
-    const user = userEvent.setup()
+  it('asks for confirmation before patching status', async () => {
     updateEmployeeStatus.mockResolvedValue({
       data: { ...employee, status: 'INACTIVE' },
     })
 
-    renderPage()
-    expect(await screen.findByText('Aisha Shah')).toBeInTheDocument()
+    const user = await chooseInactive()
 
-    await user.click(screen.getByLabelText('Employment status'))
-    const inactive = await screen.findByRole('option', { name: 'Inactive' })
-    await user.click(inactive)
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Change employment status?',
+      }),
+    ).toBeInTheDocument()
+    expect(updateEmployeeStatus).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'Confirm' }))
 
     expect(updateEmployeeStatus).toHaveBeenCalledWith('emp_1', 'INACTIVE')
+  })
+
+  it('does not patch status when confirmation is cancelled', async () => {
+    const user = await chooseInactive()
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Change employment status?',
+      }),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    expect(updateEmployeeStatus).not.toHaveBeenCalled()
+    expect(
+      screen.queryByRole('heading', { name: 'Change employment status?' }),
+    ).not.toBeInTheDocument()
   })
 })
