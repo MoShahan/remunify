@@ -153,6 +153,28 @@ describe('EmployeesPage', () => {
     )
   })
 
+  it('changes rows per page from the select', async () => {
+    const user = userEvent.setup()
+    listEmployees.mockResolvedValue({
+      data: [employeeRow],
+      pagination: { page: 1, pageSize: 20, total: 40, totalPages: 2 },
+    })
+
+    renderPage()
+    await screen.findByText('Aisha Shah')
+
+    expect(listEmployees).toHaveBeenCalledWith(
+      expect.objectContaining({ pageSize: 20 }),
+    )
+
+    await user.click(screen.getByLabelText('Rows per page'))
+    await user.click(await screen.findByRole('option', { name: '50' }))
+
+    expect(listEmployees).toHaveBeenCalledWith(
+      expect.objectContaining({ pageSize: 50, page: 1 }),
+    )
+  })
+
   it('shows ErrorState when the list request fails', async () => {
     listEmployees.mockRejectedValue(
       new ApiError(500, 'INTERNAL_SERVER_ERROR', 'Unexpected server error'),
