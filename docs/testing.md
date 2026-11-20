@@ -39,87 +39,88 @@ As of **2026-11-20** (from `npm run test:coverage:web` / `test:coverage:api`):
 
 | Package | Statements | Branches | Functions | Lines  |
 | ------- | ---------- | -------- | --------- | ------ |
-| web     | 64.64%     | 53.79%   | 62.26%    | 66.17% |
-| api     | 68.05%     | 59.32%   | 77.77%    | 68.18% |
+| web     | 83.92%     | 73.96%   | 80.07%    | 85.67% |
+| api     | 90.27%     | 69.49%   | 97.22%    | 90.20% |
 
 Refresh the package summary **and** the directory trees when finishing work that touches app source under test or `*.test.*` files (see quality-gates skill).
 
 ### web (`@remunify/web`)
 
 ```
-File                       | % Stmts | % Branch | % Funcs | % Lines
----------------------------|---------|----------|---------|---------
-All files                  |  64.64 |  53.79 |  62.26 |  66.17
-src                        |     50 |    100 |    100 |     50
-  App.tsx                  |    100 |    100 |    100 |    100
-  main.tsx                 |      0 |    100 |    100 |      0
-src/app                    |  70.59 |    100 |     50 |    100
-  providers.tsx            |    100 |    100 |    100 |    100
-  router.tsx               |  64.28 |    100 |   37.5 |    100
-src/components             |  55.36 |  45.45 |  67.74 |  55.56
-  app-shell.tsx            |   6.66 |      0 |      0 |   6.66
-  brand-mark.tsx           |    100 |    100 |    100 |    100
-  country-flag.tsx         |    100 |  57.14 |    100 |    100
-  empty-state.tsx          |    100 |     50 |    100 |    100
-  error-state.tsx          |    100 |  33.33 |    100 |    100
-  form-field-error.tsx     |    100 |    100 |    100 |    100
-  money-text.tsx           |  83.33 |   62.5 |    100 |  83.33
-  page-header.tsx          |    100 |     75 |    100 |    100
-  scroll-to-top.tsx        |    100 |    100 |    100 |    100
-  skeletons.tsx            |    100 |    100 |    100 |    100
-  stale-data-banner.tsx    |      0 |      0 |      0 |      0
-  status-badge.tsx         |    100 |    100 |    100 |    100
-src/components/ui          |  80.95 |     48 |  70.73 |  82.26
-  badge.tsx                |    100 |    100 |    100 |    100
-  button.tsx               |    100 |    100 |    100 |    100
-  card.tsx                 |    100 |    100 |    100 |    100
-  dialog.tsx               |    100 |    100 |    100 |    100
-  dropdown-menu.tsx        |     50 |      0 |      0 |     50
-  input.tsx                |    100 |    100 |    100 |    100
-  label.tsx                |    100 |    100 |    100 |    100
-  password-input.tsx       |     40 |     50 |     25 |     50
-  select.tsx               |    100 |    100 |    100 |    100
-  separator.tsx            |      0 |      0 |      0 |      0
-  sheet.tsx                |  55.55 |      0 |      0 |  55.55
-  skeleton.tsx             |    100 |    100 |    100 |    100
-  sonner.tsx               |    100 |    100 |    100 |    100
-  table.tsx                |    100 |    100 |    100 |    100
-  tooltip.tsx              |    100 |    100 |    100 |    100
-src/features/analytics     |  71.79 |  63.38 |  84.21 |  74.29
-  rollup-table-model.ts    |     65 |  52.83 |  84.61 |   67.3
-  rollup-tables.tsx        |  93.33 |  94.44 |     75 |  93.33
-  use-analytics-summary.ts |    100 |    100 |    100 |    100
-src/features/auth          |  80.56 |  66.67 |  81.82 |  78.79
-  auth-context.tsx         |  76.92 |     50 |  77.77 |  73.91
-  require-auth.tsx         |     90 |     75 |    100 |     90
-src/features/employees     |  70.49 |  69.39 |  69.23 |  72.41
-  salary-form-dialog.tsx   |  70.49 |  69.38 |  69.23 |  72.41
-src/features/export        |      0 |      0 |      0 |      0
-  use-export.ts            |      0 |      0 |      0 |      0
-src/hooks                  |    100 |    100 |    100 |    100
-  use-debounce.ts          |    100 |    100 |    100 |    100
-src/lib                    |     76 |     50 |  83.33 |  78.26
-  country-flags.ts         |    100 |    100 |    100 |    100
-  env.ts                   |      0 |      0 |      0 |      0
-  format-money.ts          |  88.88 |     70 |    100 |  93.75
-  utils.ts                 |    100 |    100 |    100 |    100
-src/lib/api                |  44.33 |  43.55 |     50 |  44.21
-  analytics.ts             |  66.66 |    100 |     50 |  66.66
-  auth-storage.ts          |  66.66 |     50 |  66.66 |   64.7
-  auth.ts                  |      0 |    100 |      0 |      0
-  client.ts                |      0 |      0 |      0 |      0
-  employees.ts             |  31.57 |      0 |  41.66 |  33.33
-  errors.ts                |    100 |  86.66 |    100 |    100
-  export.ts                |      0 |    100 |      0 |      0
-  index.ts                 |    100 |    100 |    100 |    100
-  types.ts                 |    100 |    100 |    100 |    100
-src/pages                  |  65.68 |  53.58 |  53.76 |  67.97
-  analytics.tsx            |      0 |      0 |      0 |      0
-  dashboard.tsx            |   62.5 |     60 |  45.45 |   62.5
-  employee-detail.tsx      |  71.05 |  48.78 |   62.5 |  77.14
-  employees.tsx            |  73.62 |   78.3 |  65.51 |     75
-  login.tsx                |  76.31 |     50 |    100 |  78.37
-  tables.tsx               |  78.94 |  64.28 |  68.75 |  81.81
+File                        | % Stmts | % Branch | % Funcs | % Lines
+----------------------------|---------|----------|---------|---------
+All files                   |  83.92 |  73.96 |  80.07 |  85.67
+src                         |     50 |    100 |    100 |     50
+  App.tsx                   |    100 |    100 |    100 |    100
+  main.tsx                  |      0 |    100 |    100 |      0
+src/app                     |  70.59 |    100 |     50 |    100
+  providers.tsx             |    100 |    100 |    100 |    100
+  router.tsx                |  64.28 |    100 |   37.5 |    100
+src/components              |  94.64 |  70.91 |  96.77 |  94.44
+  app-shell.tsx             |  93.33 |   62.5 |   87.5 |  93.33
+  brand-mark.tsx            |    100 |    100 |    100 |    100
+  country-flag.tsx          |    100 |  57.14 |    100 |    100
+  empty-state.tsx           |    100 |     50 |    100 |    100
+  error-state.tsx           |    100 |  33.33 |    100 |    100
+  form-field-error.tsx      |    100 |    100 |    100 |    100
+  money-text.tsx            |  83.33 |   62.5 |    100 |  83.33
+  page-header.tsx           |    100 |     75 |    100 |    100
+  scroll-to-top.tsx         |    100 |    100 |    100 |    100
+  skeletons.tsx             |    100 |    100 |    100 |    100
+  stale-data-banner.tsx     |     90 |     90 |    100 |  88.88
+  status-badge.tsx          |    100 |    100 |    100 |    100
+src/components/ui           |  88.89 |     64 |  82.93 |  90.32
+  badge.tsx                 |    100 |    100 |    100 |    100
+  button.tsx                |    100 |    100 |    100 |    100
+  card.tsx                  |    100 |    100 |    100 |    100
+  dialog.tsx                |    100 |    100 |    100 |    100
+  dropdown-menu.tsx         |    100 |     60 |    100 |    100
+  input.tsx                 |    100 |    100 |    100 |    100
+  label.tsx                 |    100 |    100 |    100 |    100
+  password-input.tsx        |     40 |     50 |     25 |     50
+  select.tsx                |    100 |    100 |    100 |    100
+  separator.tsx             |      0 |      0 |      0 |      0
+  sheet.tsx                 |  66.66 |    100 |     25 |  66.66
+  skeleton.tsx              |    100 |    100 |    100 |    100
+  sonner.tsx                |    100 |    100 |    100 |    100
+  table.tsx                 |    100 |    100 |    100 |    100
+  tooltip.tsx               |    100 |    100 |    100 |    100
+src/features/analytics      |   96.2 |  90.14 |     95 |  97.18
+  rollup-preview-footer.tsx |    100 |    100 |    100 |    100
+  rollup-table-model.ts     |  96.66 |  88.67 |    100 |  98.07
+  rollup-tables.tsx         |  93.33 |  94.44 |     75 |  93.33
+  use-analytics-summary.ts  |    100 |    100 |    100 |    100
+src/features/auth           |  97.22 |  83.33 |    100 |  96.97
+  auth-context.tsx          |    100 |    100 |    100 |    100
+  require-auth.tsx          |     90 |     75 |    100 |     90
+src/features/employees      |  70.49 |  69.39 |  69.23 |  72.41
+  salary-form-dialog.tsx    |  70.49 |  69.38 |  69.23 |  72.41
+src/features/export         |    100 |    100 |    100 |    100
+  use-export.ts             |    100 |    100 |    100 |    100
+src/hooks                   |    100 |    100 |    100 |    100
+  use-debounce.ts           |    100 |    100 |    100 |    100
+src/lib                     |     76 |     50 |  83.33 |  78.26
+  country-flags.ts          |    100 |    100 |    100 |    100
+  env.ts                    |      0 |      0 |      0 |      0
+  format-money.ts           |  88.88 |     70 |    100 |  93.75
+  utils.ts                  |    100 |    100 |    100 |    100
+src/lib/api                 |  92.78 |  88.71 |  90.63 |  92.63
+  analytics.ts              |  66.66 |    100 |     50 |  66.66
+  auth-storage.ts           |  66.66 |     50 |  66.66 |   64.7
+  auth.ts                   |    100 |    100 |    100 |    100
+  client.ts                 |    100 |   90.9 |    100 |    100
+  employees.ts              |    100 |    100 |    100 |    100
+  errors.ts                 |    100 |  86.66 |    100 |    100
+  export.ts                 |    100 |    100 |    100 |    100
+  index.ts                  |    100 |    100 |    100 |    100
+  types.ts                  |    100 |    100 |    100 |    100
+src/pages                   |  75.65 |  69.62 |  66.67 |  77.73
+  analytics.tsx             |  77.41 |  60.71 |  56.25 |  75.86
+  dashboard.tsx             |     75 |     70 |  63.63 |     75
+  employee-detail.tsx       |  73.68 |  73.17 |  68.75 |     80
+  employees.tsx             |  73.62 |   78.3 |  65.51 |     75
+  login.tsx                 |  76.31 |     50 |    100 |  78.37
+  tables.tsx                |  78.94 |  64.28 |  68.75 |  81.81
 ```
 
 ### api (`@remunify/api`)
@@ -127,23 +128,23 @@ src/pages                  |  65.68 |  53.58 |  53.76 |  67.97
 ```
 File                      | % Stmts | % Branch | % Funcs | % Lines
 --------------------------|---------|----------|---------|---------
-All files                 |  68.05 |  59.32 |  77.77 |  68.18
+All files                 |  90.27 |  69.49 |  97.22 |   90.2
 src                       |  68.42 |      0 |  66.67 |  68.42
   app.ts                  |    100 |    100 |    100 |    100
   index.ts                |      0 |      0 |      0 |      0
-src/db                    |    100 |     75 |    100 |    100
-  prisma.ts               |    100 |     75 |    100 |    100
-src/lib                   |  76.74 |  54.17 |  92.86 |  76.74
+src/db                    |      0 |      0 |    100 |      0
+  prisma.ts               |      0 |      0 |    100 |      0
+src/lib                   |   90.7 |     75 |  92.86 |   90.7
   async-handler.ts        |    100 |    100 |    100 |    100
   errors.ts               |     90 |    100 |  83.33 |     90
-  jwt.ts                  |  63.15 |  47.05 |    100 |  63.15
+  jwt.ts                  |  94.73 |  76.47 |    100 |  94.73
   password.ts             |  83.33 |  71.42 |    100 |  83.33
-src/middleware            |  74.07 |  68.75 |     80 |  76.92
-  error-handler.ts        |  66.66 |     75 |    100 |  66.66
+src/middleware            |   96.3 |   87.5 |    100 |  96.15
+  error-handler.ts        |    100 |    100 |    100 |    100
   require-auth.ts         |     90 |  83.33 |    100 |     90
-  validate.ts             |  63.63 |     50 |  66.66 |     70
-src/modules/analytics     |     80 |  57.14 |  85.71 |     80
-  analytics.controller.ts |      0 |    100 |      0 |      0
+  validate.ts             |    100 |  83.33 |    100 |    100
+src/modules/analytics     |     90 |  57.14 |    100 |     90
+  analytics.controller.ts |    100 |    100 |    100 |    100
   analytics.routes.ts     |    100 |    100 |    100 |    100
   analytics.service.ts    |   87.5 |  57.14 |    100 |   87.5
 src/modules/auth          |    100 |    100 |    100 |    100
@@ -151,18 +152,18 @@ src/modules/auth          |    100 |    100 |    100 |    100
   auth.routes.ts          |    100 |    100 |    100 |    100
   auth.schemas.ts         |    100 |    100 |    100 |    100
   auth.service.ts         |    100 |    100 |    100 |    100
-src/modules/employees     |  72.88 |  59.09 |  78.57 |  72.41
-  employees.controller.ts |     25 |    100 |     25 |     25
+src/modules/employees     |  88.14 |  59.09 |    100 |  87.93
+  employees.controller.ts |    100 |    100 |    100 |    100
   employees.routes.ts     |    100 |    100 |    100 |    100
   employees.schemas.ts    |    100 |    100 |    100 |    100
   employees.service.ts    |  81.57 |  59.09 |    100 |  81.08
-src/modules/export        |  29.79 |   37.5 |  54.55 |  29.79
+src/modules/export        |  95.74 |  81.25 |    100 |  95.74
   csv.ts                  |    100 |  83.33 |    100 |    100
-  export.controller.ts    |      0 |    100 |      0 |      0
+  export.controller.ts    |    100 |    100 |    100 |    100
   export.routes.ts        |    100 |    100 |    100 |    100
-  export.service.ts       |  16.21 |     10 |  57.14 |  16.21
-src/modules/salaries      |  72.41 |     75 |     75 |  72.41
-  salaries.controller.ts  |      0 |    100 |      0 |      0
+  export.service.ts       |  94.59 |     80 |    100 |  94.59
+src/modules/salaries      |  96.55 |     75 |    100 |  96.55
+  salaries.controller.ts  |    100 |    100 |    100 |    100
   salaries.routes.ts      |    100 |    100 |    100 |    100
   salaries.schemas.ts     |    100 |    100 |    100 |    100
   salaries.service.ts     |  93.54 |     75 |    100 |  93.54
