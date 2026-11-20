@@ -72,6 +72,13 @@ function renderPage(initial = '/tables') {
   )
 }
 
+async function findRangeLabel(pattern: RegExp) {
+  return screen.findByText((_, element) => {
+    if (element?.tagName !== 'P') return false
+    return pattern.test(element.textContent ?? '')
+  })
+}
+
 describe('TablesPage', () => {
   beforeEach(() => {
     getAnalyticsSummary.mockReset()
@@ -81,10 +88,7 @@ describe('TablesPage', () => {
   it('falls back to currency when view is invalid', async () => {
     renderPage('/tables?view=nope')
 
-    expect(await screen.findByText(/30 rows/)).toBeInTheDocument()
-    expect(
-      screen.getAllByRole('button', { name: /C00:/i }).length,
-    ).toBeGreaterThan(0)
+    expect(await findRangeLabel(/Showing 1-25 of 30/)).toBeInTheDocument()
     expect(screen.getByLabelText('Select analytics table')).toHaveTextContent(
       'By currency',
     )
@@ -94,7 +98,7 @@ describe('TablesPage', () => {
     const user = userEvent.setup()
     renderPage('/tables?view=currency')
 
-    expect(await screen.findByText(/30 rows/)).toBeInTheDocument()
+    expect(await findRangeLabel(/Showing 1-25 of 30/)).toBeInTheDocument()
     await user.click(screen.getByLabelText('Select analytics table'))
     await user.click(await screen.findByRole('option', { name: /By country/i }))
 
@@ -108,15 +112,27 @@ describe('TablesPage', () => {
     const user = userEvent.setup()
     renderPage('/tables?view=currency&page=1')
 
-    expect(await screen.findByText(/30 rows/)).toBeInTheDocument()
+    expect(await findRangeLabel(/Showing 1-25 of 30/)).toBeInTheDocument()
     const pageInput = screen.getByLabelText('Go to page')
     await user.clear(pageInput)
     await user.type(pageInput, '99')
     await user.click(screen.getByRole('button', { name: 'Go' }))
 
-    expect(await screen.findByText(/Page 2 of 2/)).toBeInTheDocument()
+    expect(await findRangeLabel(/Showing 26-30 of 30/)).toBeInTheDocument()
     expect(
       screen.getAllByRole('button', { name: /C25:/i }).length,
     ).toBeGreaterThan(0)
+  })
+
+  it('changes rows per page from the select', async () => {
+    const user = userEvent.setup()
+    renderPage('/tables?view=currency&pageSize=25')
+
+    expect(await findRangeLabel(/Showing 1-25 of 30/)).toBeInTheDocument()
+    await user.click(screen.getByLabelText('Rows per page'))
+    await user.click(await screen.findByRole('option', { name: '10' }))
+
+    expect(await findRangeLabel(/Showing 1-10 of 30/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Rows per page')).toHaveTextContent('10')
   })
 })
