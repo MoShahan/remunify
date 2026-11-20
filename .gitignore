@@ -11,6 +11,8 @@ node_modules
 dist
 dist-ssr
 apps/*/dist
+coverage
+apps/*/coverage
 *.local
 
 # Env and secrets

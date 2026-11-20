@@ -36,3 +36,4 @@
 - Small reviewable increments; verify lint/typecheck/tests before claiming done
 - Synthetic data only; never commit secrets
 - Update `docs/` when decisions change
+- Live CLI coverage snapshot (Statements / Branches / Functions / Lines): [`testing.md`](./testing.md)

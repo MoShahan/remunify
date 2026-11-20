@@ -9,7 +9,7 @@ description: >-
 
 ## Tracked docs (GitHub)
 
-Keep in `docs/`: `requirements.md`, `architecture.md`, `database-design.md`, `er-diagram.md`, later technical-decisions / AI workflow / performance.
+Keep in `docs/`: `requirements.md`, `architecture.md`, `database-design.md`, `er-diagram.md`, `technical-decisions.md`, `testing.md`, `performance-considerations.md`, `ai-workflow.md`.
 
 `README.md` is product-facing - no hiring/assessment framing.
 
@@ -26,4 +26,4 @@ Do not commit: `PROJECT_PLAN.md`, `docs/hiring-email.md`, `docs/assessment.md`, 
 
 ## Artifacts expected for the submission
 
-Requirements, design/architecture (incl. ER), AI workflow notes, trade-offs, performance notes - see assessment; write them in tracked `docs/` as we go.
+Requirements, design/architecture (incl. ER), AI workflow notes, trade-offs, performance notes, testing/coverage snapshot - see assessment; write them in tracked `docs/` as we go.

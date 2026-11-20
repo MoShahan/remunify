@@ -52,6 +52,7 @@ The focus stays on **salary records** and **compensation insight**.
 | [`docs/database-design.md`](docs/database-design.md)                       | Schema, indexes, FX semantics             |
 | [`docs/er-diagram.md`](docs/er-diagram.md)                                 | Entity relationships                      |
 | [`docs/technical-decisions.md`](docs/technical-decisions.md)               | Stack and trade-offs                      |
+| [`docs/testing.md`](docs/testing.md)                                       | Test commands and coverage snapshot       |
 | [`docs/performance-considerations.md`](docs/performance-considerations.md) | SQL-side work, export streaming, FE cache |
 | [`docs/ai-workflow.md`](docs/ai-workflow.md)                               | Tools, skills, accepted/rejected choices  |
 
