@@ -21,14 +21,11 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  PREVIEW_ROW_LIMIT,
-  previewRangeLabel,
-} from '@/features/analytics/rollup-table-model'
+import { RollupPreviewFooter } from '@/features/analytics/rollup-preview-footer'
+import { PREVIEW_ROW_LIMIT } from '@/features/analytics/rollup-table-model'
 import { AnalyticsRollupTable } from '@/features/analytics/rollup-tables'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
 import { useExportActions } from '@/features/export/use-export'
@@ -272,8 +269,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>By currency</CardTitle>
                 <CardDescription>
-                  Current salaries only - totals stay in their own currency.{' '}
-                  {previewRangeLabel(query.data.byCurrency.length)}.
+                  Current salaries only - totals stay in their own currency.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -282,11 +278,10 @@ export default function DashboardPage() {
                   rows={query.data.byCurrency.slice(0, PREVIEW_ROW_LIMIT)}
                 />
               </CardContent>
-              <CardFooter>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/tables?view=currency">View full table</Link>
-                </Button>
-              </CardFooter>
+              <RollupPreviewFooter
+                to="/tables?view=currency"
+                total={query.data.byCurrency.length}
+              />
             </Card>
 
             <Card className="border-primary/20 bg-brand-muted/40">
@@ -327,8 +322,7 @@ export default function DashboardPage() {
               <CardHeader>
                 <CardTitle>By country</CardTitle>
                 <CardDescription>
-                  Current salaries grouped by country and currency.{' '}
-                  {previewRangeLabel(query.data.byCountry.length)}.
+                  Current salaries grouped by country and currency.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -337,19 +331,17 @@ export default function DashboardPage() {
                   rows={query.data.byCountry.slice(0, PREVIEW_ROW_LIMIT)}
                 />
               </CardContent>
-              <CardFooter>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/tables?view=country">View full table</Link>
-                </Button>
-              </CardFooter>
+              <RollupPreviewFooter
+                to="/tables?view=country"
+                total={query.data.byCountry.length}
+              />
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>By department</CardTitle>
                 <CardDescription>
-                  Current salaries grouped by department and currency.{' '}
-                  {previewRangeLabel(query.data.byDepartment.length)}.
+                  Current salaries grouped by department and currency.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -358,11 +350,10 @@ export default function DashboardPage() {
                   rows={query.data.byDepartment.slice(0, PREVIEW_ROW_LIMIT)}
                 />
               </CardContent>
-              <CardFooter>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/tables?view=department">View full table</Link>
-                </Button>
-              </CardFooter>
+              <RollupPreviewFooter
+                to="/tables?view=department"
+                total={query.data.byDepartment.length}
+              />
             </Card>
           </div>
         </div>

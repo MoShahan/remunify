@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import {
   Bar,
   BarChart,
@@ -17,12 +16,10 @@ import { MoneyText } from '@/components/money-text'
 import { PageHeader } from '@/components/page-header'
 import { CardSkeleton, KpiSkeleton } from '@/components/skeletons'
 import { StaleDataBanner } from '@/components/stale-data-banner'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
@@ -33,10 +30,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  PREVIEW_ROW_LIMIT,
-  previewRangeLabel,
-} from '@/features/analytics/rollup-table-model'
+import { RollupPreviewFooter } from '@/features/analytics/rollup-preview-footer'
+import { PREVIEW_ROW_LIMIT } from '@/features/analytics/rollup-table-model'
 import { AnalyticsRollupTable } from '@/features/analytics/rollup-tables'
 import { useAnalyticsSummary } from '@/features/analytics/use-analytics-summary'
 import { formatMoneyAmount } from '@/lib/format-money'
@@ -366,8 +361,7 @@ export default function AnalyticsPage() {
               <CardHeader>
                 <CardTitle>By country</CardTitle>
                 <CardDescription>
-                  Totals stay with their currency - never summed across FX.{' '}
-                  {previewRangeLabel(query.data.byCountry.length)}.
+                  Totals stay with their currency - never summed across FX.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -376,19 +370,17 @@ export default function AnalyticsPage() {
                   rows={query.data.byCountry.slice(0, PREVIEW_ROW_LIMIT)}
                 />
               </CardContent>
-              <CardFooter>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/tables?view=country">View full table</Link>
-                </Button>
-              </CardFooter>
+              <RollupPreviewFooter
+                to="/tables?view=country"
+                total={query.data.byCountry.length}
+              />
             </Card>
 
             <Card>
               <CardHeader>
                 <CardTitle>By department</CardTitle>
                 <CardDescription>
-                  Department rollups grouped with currency.{' '}
-                  {previewRangeLabel(query.data.byDepartment.length)}.
+                  Department rollups grouped with currency.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -397,11 +389,10 @@ export default function AnalyticsPage() {
                   rows={query.data.byDepartment.slice(0, PREVIEW_ROW_LIMIT)}
                 />
               </CardContent>
-              <CardFooter>
-                <Button asChild variant="outline" size="sm">
-                  <Link to="/tables?view=department">View full table</Link>
-                </Button>
-              </CardFooter>
+              <RollupPreviewFooter
+                to="/tables?view=department"
+                total={query.data.byDepartment.length}
+              />
             </Card>
           </div>
 
