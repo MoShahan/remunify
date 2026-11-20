@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '@/lib/api/errors'
 import EmployeeDetailPage from '@/pages/employee-detail'
 
 const getEmployee = vi.fn()
@@ -104,5 +105,55 @@ describe('EmployeeDetailPage', () => {
     expect(
       screen.queryByRole('heading', { name: 'Change employment status?' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('shows error state when employee load fails', async () => {
+    getEmployee.mockRejectedValue(
+      new ApiError(404, 'NOT_FOUND', 'Employee not found'),
+    )
+    renderPage()
+    expect(await screen.findByText('Employee not found')).toBeInTheDocument()
+  })
+
+  it('renders salary history rows when present', async () => {
+    getEmployee.mockResolvedValue({
+      data: {
+        ...employee,
+        salary: {
+          id: 'sal_2',
+          amount: '120000.00',
+          currency: 'INR',
+          period: 'ANNUAL',
+          effectiveFrom: '2025-01-01',
+          createdAt: '2025-01-01T00:00:00.000Z',
+          updatedAt: '2025-01-01T00:00:00.000Z',
+        },
+        salaryHistory: [
+          {
+            id: 'sal_1',
+            amount: '100000.00',
+            currency: 'INR',
+            period: 'ANNUAL',
+            effectiveFrom: '2024-01-01',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z',
+          },
+          {
+            id: 'sal_2',
+            amount: '120000.00',
+            currency: 'INR',
+            period: 'ANNUAL',
+            effectiveFrom: '2025-01-01',
+            createdAt: '2025-01-01T00:00:00.000Z',
+            updatedAt: '2025-01-01T00:00:00.000Z',
+          },
+        ],
+      },
+    })
+    renderPage()
+    expect(await screen.findByText('Aisha Shah')).toBeInTheDocument()
+    expect(screen.getByText('Salary history')).toBeInTheDocument()
+    expect(screen.getAllByText(/1,00,000/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/1,20,000/).length).toBeGreaterThan(0)
   })
 })

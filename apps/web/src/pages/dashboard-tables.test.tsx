@@ -1,10 +1,14 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { ApiError } from '@/lib/api/errors'
 import DashboardPage from '@/pages/dashboard'
 
 const getAnalyticsSummary = vi.fn()
+const exportCsv = vi.fn()
+const exportXlsx = vi.fn()
 
 vi.mock('@/lib/api/analytics', async () => {
   const actual = await vi.importActual<typeof import('@/lib/api/analytics')>(
@@ -19,72 +23,88 @@ vi.mock('@/lib/api/analytics', async () => {
 vi.mock('@/features/export/use-export', () => ({
   useExportActions: () => ({
     exporting: null,
-    exportCsv: vi.fn(),
-    exportXlsx: vi.fn(),
+    exportCsv,
+    exportXlsx,
   }),
 }))
 
-describe('DashboardPage table links', () => {
+vi.mock('recharts', async () => {
+  const actual = await vi.importActual<typeof import('recharts')>('recharts')
+  return {
+    ...actual,
+    ResponsiveContainer: ({ children }: { children?: unknown }) => (
+      <div data-testid="chart">{children as never}</div>
+    ),
+  }
+})
+
+const summaryData = {
+  headcount: {
+    total: 10,
+    active: 8,
+    inactive: 2,
+    withSalary: 9,
+    withoutSalary: 1,
+  },
+  byCurrency: [
+    {
+      currency: 'USD',
+      employeeCount: 1,
+      totalAmount: '100.00',
+      averageAmount: '100.00',
+      medianAmount: '100.00',
+    },
+  ],
+  byCountry: [
+    {
+      country: 'United States',
+      currency: 'USD',
+      employeeCount: 1,
+      totalAmount: '100.00',
+      averageAmount: '100.00',
+    },
+  ],
+  byDepartment: [
+    {
+      department: 'Engineering',
+      currency: 'USD',
+      employeeCount: 1,
+      totalAmount: '100.00',
+      averageAmount: '100.00',
+    },
+  ],
+  averageByCountryUsd: [],
+  companyWideUsd: {
+    totalAmountUsd: '100.00',
+    employeeCount: 1,
+    ratesAsOf: null,
+    label: 'demo FX',
+  },
+}
+
+function renderDashboard() {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  return render(
+    <QueryClientProvider client={client}>
+      <MemoryRouter>
+        <DashboardPage />
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
+describe('DashboardPage', () => {
   beforeEach(() => {
     getAnalyticsSummary.mockReset()
-    getAnalyticsSummary.mockResolvedValue({
-      data: {
-        headcount: {
-          total: 1,
-          active: 1,
-          inactive: 0,
-          withSalary: 1,
-          withoutSalary: 0,
-        },
-        byCurrency: [
-          {
-            currency: 'USD',
-            employeeCount: 1,
-            totalAmount: '100.00',
-            averageAmount: '100.00',
-            medianAmount: '100.00',
-          },
-        ],
-        byCountry: [
-          {
-            country: 'United States',
-            currency: 'USD',
-            employeeCount: 1,
-            totalAmount: '100.00',
-            averageAmount: '100.00',
-          },
-        ],
-        byDepartment: [
-          {
-            department: 'Engineering',
-            currency: 'USD',
-            employeeCount: 1,
-            totalAmount: '100.00',
-            averageAmount: '100.00',
-          },
-        ],
-        averageByCountryUsd: [],
-        companyWideUsd: {
-          totalAmountUsd: '100.00',
-          employeeCount: 1,
-          ratesAsOf: null,
-          label: 'demo FX',
-        },
-      },
-    })
+    exportCsv.mockReset()
+    exportXlsx.mockReset()
+    getAnalyticsSummary.mockResolvedValue({ data: summaryData })
   })
 
   it('links View full table to the matching tables view', async () => {
-    const client = new QueryClient({
-      defaultOptions: { queries: { retry: false } },
-    })
-    render(
-      <QueryClientProvider client={client}>
-        <MemoryRouter>
-          <DashboardPage />
-        </MemoryRouter>
-      </QueryClientProvider>,
-    )
+    renderDashboard()
 
     const links = await screen.findAllByRole('link', {
       name: 'View full table',
@@ -96,5 +116,28 @@ describe('DashboardPage table links', () => {
         '/tables?view=department',
       ]),
     )
+  })
+
+  it('renders KPI labels and export actions', async () => {
+    const user = userEvent.setup()
+    renderDashboard()
+
+    expect(await screen.findByText('Total headcount')).toBeInTheDocument()
+    expect(screen.getByText('With salary')).toBeInTheDocument()
+    expect(screen.getByText('10')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: /CSV/i }))
+    await user.click(screen.getByRole('button', { name: /Excel/i }))
+    expect(exportCsv).toHaveBeenCalled()
+    expect(exportXlsx).toHaveBeenCalled()
+  })
+
+  it('shows ErrorState when summary fails', async () => {
+    getAnalyticsSummary.mockRejectedValue(
+      new ApiError(500, 'INTERNAL', 'Dashboard failed'),
+    )
+    renderDashboard()
+
+    expect(await screen.findByText('Dashboard failed')).toBeInTheDocument()
   })
 })
