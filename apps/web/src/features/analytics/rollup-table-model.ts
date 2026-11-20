@@ -1,7 +1,10 @@
 import type { AnalyticsSummary, CurrencyAgg } from '@/lib/api'
 
 export const PREVIEW_ROW_LIMIT = 8
-export const TABLES_PAGE_SIZE = 25
+export const DEFAULT_TABLES_PAGE_SIZE = 25
+export const DEFAULT_EMPLOYEES_PAGE_SIZE = 20
+export const PAGE_SIZE_OPTIONS = [10, 20, 25, 50, 100] as const
+export const MAX_PAGE_SIZE = 100
 
 /** e.g. "Showing 1–8 of 42" for preview cards. */
 export function previewRangeLabel(
@@ -10,7 +13,17 @@ export function previewRangeLabel(
 ): string {
   if (total <= 0) return 'Showing 0 of 0'
   const end = Math.min(limit, total)
-  return `Showing 1–${end.toLocaleString()} of ${total.toLocaleString()}`
+  return `Showing 1-${end.toLocaleString()} of ${total.toLocaleString()}`
+}
+
+export function parsePageSize(
+  value: string | null | undefined,
+  fallback: number = DEFAULT_TABLES_PAGE_SIZE,
+): number {
+  if (value == null || value.trim() === '') return fallback
+  const n = Number(value)
+  if (!Number.isFinite(n) || n < 1) return fallback
+  return Math.min(MAX_PAGE_SIZE, Math.trunc(n))
 }
 
 export type TableViewId = 'currency' | 'country' | 'department'

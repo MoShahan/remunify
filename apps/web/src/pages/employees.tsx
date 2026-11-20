@@ -32,6 +32,11 @@ import {
 } from '@/components/ui/table'
 import { useDebounce } from '@/hooks/use-debounce'
 import {
+  DEFAULT_EMPLOYEES_PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
+  parsePageSize,
+} from '@/features/analytics/rollup-table-model'
+import {
   employeeKeys,
   getEmployee,
   getEmployeeFacets,
@@ -45,12 +50,14 @@ type SortableColumn = 'fullName' | 'employeeNumber' | 'department'
 
 function readParams(searchParams: URLSearchParams): EmployeeListParams {
   const page = Number(searchParams.get('page') ?? '1')
-  const pageSize = Number(searchParams.get('pageSize') ?? '20')
   const status = searchParams.get('status')
   const sortBy = searchParams.get('sortBy') as EmployeeListParams['sortBy']
   return {
     page: Number.isFinite(page) && page > 0 ? page : 1,
-    pageSize: Number.isFinite(pageSize) && pageSize > 0 ? pageSize : 20,
+    pageSize: parsePageSize(
+      searchParams.get('pageSize'),
+      DEFAULT_EMPLOYEES_PAGE_SIZE,
+    ),
     search: searchParams.get('search') ?? undefined,
     country: searchParams.get('country') ?? undefined,
     department: searchParams.get('department') ?? undefined,
@@ -372,13 +379,38 @@ export default function EmployeesPage() {
                   : `Showing ${(
                       (pagination.page - 1) * pagination.pageSize +
                       1
-                    ).toLocaleString()}–${Math.min(
+                    ).toLocaleString()}-${Math.min(
                       pagination.page * pagination.pageSize,
                       pagination.total,
                     ).toLocaleString()} of ${pagination.total.toLocaleString()}`}{' '}
                 · Page {pagination.page} of {pagination.totalPages}
               </p>
               <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm text-muted-foreground">Rows</span>
+                  <Select
+                    value={String(
+                      params.pageSize ?? DEFAULT_EMPLOYEES_PAGE_SIZE,
+                    )}
+                    onValueChange={(value) =>
+                      updateParams({ pageSize: value, page: '1' })
+                    }
+                  >
+                    <SelectTrigger
+                      className="h-8 w-[4.5rem]"
+                      aria-label="Rows per page"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size} value={String(size)}>
+                          {size}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <Button
                   type="button"
                   variant="outline"

@@ -15,10 +15,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
+  DEFAULT_TABLES_PAGE_SIZE,
+  PAGE_SIZE_OPTIONS,
   TABLE_VIEWS,
-  TABLES_PAGE_SIZE,
   defaultSortKey,
   getTableViewMeta,
+  parsePageSize,
   parseSortKey,
   parseTableView,
   rowsForView,
@@ -43,6 +45,10 @@ export default function TablesPage() {
   const sortOrder = readSortOrder(searchParams.get('sortOrder'))
   const pageRaw = Number(searchParams.get('page') ?? '1')
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? Math.trunc(pageRaw) : 1
+  const pageSize = parsePageSize(
+    searchParams.get('pageSize'),
+    DEFAULT_TABLES_PAGE_SIZE,
+  )
 
   const [pageInput, setPageInput] = useState(String(page))
   const [prevPage, setPrevPage] = useState(page)
@@ -83,15 +89,11 @@ export default function TablesPage() {
 
   const allRows = query.data ? rowsForView(query.data, view) : []
   const sorted = sortRollupRows(view, allRows, sortBy, sortOrder)
-  const totalPages = Math.max(1, Math.ceil(sorted.length / TABLES_PAGE_SIZE))
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize))
   const safePage = Math.min(page, totalPages)
-  const rangeStart =
-    sorted.length === 0 ? 0 : (safePage - 1) * TABLES_PAGE_SIZE + 1
-  const rangeEnd = Math.min(safePage * TABLES_PAGE_SIZE, sorted.length)
-  const pageRows = sorted.slice(
-    (safePage - 1) * TABLES_PAGE_SIZE,
-    safePage * TABLES_PAGE_SIZE,
-  )
+  const rangeStart = sorted.length === 0 ? 0 : (safePage - 1) * pageSize + 1
+  const rangeEnd = Math.min(safePage * pageSize, sorted.length)
+  const pageRows = sorted.slice((safePage - 1) * pageSize, safePage * pageSize)
 
   const goToPage = () => {
     const raw = Number(pageInput)
@@ -188,12 +190,34 @@ export default function TablesPage() {
                 />
                 <div className="flex flex-col gap-3 border-t border-border/70 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-sm text-muted-foreground">
-                    Showing {rangeStart.toLocaleString()}–
-                    {rangeEnd.toLocaleString()} of{' '}
-                    {sorted.length.toLocaleString()} · Page {safePage} of{' '}
-                    {totalPages}
+                    {`Showing ${rangeStart.toLocaleString()}-${rangeEnd.toLocaleString()} of ${sorted.length.toLocaleString()} · Page ${safePage} of ${totalPages}`}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm text-muted-foreground">
+                        Rows
+                      </span>
+                      <Select
+                        value={String(pageSize)}
+                        onValueChange={(value) =>
+                          updateParams({ pageSize: value, page: '1' })
+                        }
+                      >
+                        <SelectTrigger
+                          className="h-8 w-[4.5rem]"
+                          aria-label="Rows per page"
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PAGE_SIZE_OPTIONS.map((size) => (
+                            <SelectItem key={size} value={String(size)}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <Button
                       type="button"
                       variant="outline"
