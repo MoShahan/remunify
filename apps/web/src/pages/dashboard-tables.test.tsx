@@ -118,13 +118,16 @@ describe('DashboardPage', () => {
     )
   })
 
-  it('renders KPI labels and export actions', async () => {
+  it('renders KPI labels, coverage, status pie, and export actions', async () => {
     const user = userEvent.setup()
     renderDashboard()
 
     expect(await screen.findByText('Total headcount')).toBeInTheDocument()
-    expect(screen.getByText('With salary')).toBeInTheDocument()
+    expect(screen.getAllByText('With salary').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByText('10')).toBeInTheDocument()
+    expect(screen.getByText('Active vs inactive')).toBeInTheDocument()
+    expect(screen.getByText('Salary coverage')).toBeInTheDocument()
+    expect(screen.queryByText('Top currencies')).not.toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /CSV/i }))
     await user.click(screen.getByRole('button', { name: /Excel/i }))

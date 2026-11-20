@@ -110,16 +110,36 @@ describe('AnalyticsPage', () => {
     getAnalyticsSummary.mockReset()
   })
 
-  it('shows KPIs and chart sections after load', async () => {
+  it('shows chart sections and tables jump links after load', async () => {
     getAnalyticsSummary.mockResolvedValue({ data: summary })
     renderPage()
 
     expect(await screen.findByText('Employees by currency')).toBeInTheDocument()
-    expect(screen.getByText('Active vs inactive')).toBeInTheDocument()
+    expect(
+      screen.getByText('Median vs average by currency'),
+    ).toBeInTheDocument()
     expect(screen.getByText('Average salary by country')).toBeInTheDocument()
     expect(screen.getByText(/Rates as of 2026-01-01/)).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
-    expect(screen.getByText('8')).toBeInTheDocument()
+    expect(screen.getByText('Top cohorts')).toBeInTheDocument()
+    expect(screen.getByText('Full tables')).toBeInTheDocument()
+
+    expect(screen.queryByText('Active vs inactive')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'View full table' }),
+    ).not.toBeInTheDocument()
+
+    expect(screen.getByRole('link', { name: 'By currency' })).toHaveAttribute(
+      'href',
+      '/tables?view=currency',
+    )
+    expect(screen.getByRole('link', { name: 'By country' })).toHaveAttribute(
+      'href',
+      '/tables?view=country',
+    )
+    expect(screen.getByRole('link', { name: 'By department' })).toHaveAttribute(
+      'href',
+      '/tables?view=department',
+    )
   })
 
   it('shows empty country averages copy when none exist', async () => {
